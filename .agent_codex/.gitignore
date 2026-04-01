@@ -1,0 +1,14 @@
+memory/topics/*
+!memory/topics/.gitkeep
+memory/logs/*
+!memory/logs/.gitkeep
+sessions/*
+!sessions/.gitkeep
+scratchpad/*
+!scratchpad/.gitkeep
+tasks/*
+!tasks/.gitkeep
+audit/*
+!audit/.gitkeep
+artifacts/*
+!artifacts/.gitkeep

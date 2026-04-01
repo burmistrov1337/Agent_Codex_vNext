@@ -1,0 +1,100 @@
+from __future__ import annotations
+
+import argparse
+import json
+
+from ...commands import COMMANDS
+from ...config import ensure_runtime_layout, load_settings
+from ...hooks import HookPipeline
+from ...integrations.n8n import build_n8n_payload
+from ...integrations.telegram import TelegramAdapter
+from ...memory import MemoryStore
+from ...runtime import AgentExecutor, Coordinator
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(prog="agent_codex_vnext")
+    parser.add_argument("command", choices=[spec.name for spec in COMMANDS])
+    parser.add_argument("--project-root", default=".")
+    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--input")
+    parser.add_argument("--sample-data", action="store_true")
+    parser.add_argument("--headless", action="store_true")
+    parser.add_argument("--notify-telegram", action="store_true")
+    parser.add_argument("--top-limit", type=int, default=25)
+    parser.add_argument("--path")
+    parser.add_argument("--tool", default="shell")
+    parser.add_argument("--run-consolidation", action="store_true")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    settings = load_settings(args.project_root)
+    ensure_runtime_layout(settings)
+    memory = MemoryStore(settings)
+    hooks = HookPipeline(settings)
+    coordinator = Coordinator()
+    executor = AgentExecutor(settings=settings, coordinator=coordinator, hooks=hooks, memory=memory)
+    telegram = TelegramAdapter(settings)
+
+    if args.command == "doctor":
+        payload = executor.doctor_report()
+        return _emit(payload, as_json=args.json)
+    if args.command == "memory":
+        payload = executor.memory_report(run_consolidation=args.run_consolidation)
+        return _emit(payload, as_json=args.json)
+    if args.command == "review":
+        payload = executor.review_report(args.input or "")
+        return _emit(payload, as_json=args.json)
+    if args.command == "tasks":
+        payload = executor.tasks_report()
+        return _emit(payload, as_json=args.json)
+    if args.command == "hooks":
+        payload = executor.hooks_report(tool_name=args.tool, path=args.path)
+        return _emit(payload, as_json=args.json)
+    if args.command == "compact":
+        payload = executor.compact_report(args.input or "")
+        return _emit(payload, as_json=args.json)
+    if args.command == "study-digest":
+        payload = executor.study_digest_report(args.input)
+        return _emit(payload, as_json=args.json)
+    if args.command == "marketplace-watch":
+        envelope = executor.run_marketplace_watch(
+            top_limit=args.top_limit,
+            sample_data=args.sample_data,
+            headless=args.headless,
+        )
+        if args.notify_telegram and telegram.is_configured:
+            dashboard = next((artifact for artifact in envelope.artifacts if artifact.kind == "html"), None)
+            if dashboard:
+                telegram.send_file(dashboard.path, caption=envelope.final_summary)
+        if args.headless or args.json:
+            return _emit(build_n8n_payload(envelope), as_json=True)
+        return _emit(
+            {
+                "run_id": envelope.run_id,
+                "summary": envelope.final_summary,
+                "artifacts": [artifact.path for artifact in envelope.artifacts],
+            },
+            as_json=False,
+        )
+    parser.error("Unknown command")
+    return 2
+
+
+def _emit(payload: object, *, as_json: bool) -> int:
+    if as_json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        return 0
+    if isinstance(payload, dict):
+        for key, value in payload.items():
+            print(f"{key}: {value}")
+        return 0
+    print(payload)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

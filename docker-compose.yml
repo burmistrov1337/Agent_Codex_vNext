@@ -1,0 +1,26 @@
+services:
+  agent_codex:
+    build: .
+    container_name: agent_codex_vnext
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./.agent_codex:/app/.agent_codex
+      - ./skills:/app/skills
+    command: ["python", "-m", "agent_codex.apps.cli.main", "doctor"]
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: agent_codex_n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - GENERIC_TIMEZONE=Asia/Novosibirsk
+      - TZ=Asia/Novosibirsk
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  n8n_data:

@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-codex-vnext"
+version = "0.1.0"
+description = "Agent_Codex vNext: clean-room agent harness for work and study."
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+  { name = "Dasha + Codex" }
+]
+dependencies = []
+
+[project.scripts]
+agent-codex = "agent_codex.apps.cli.main:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
