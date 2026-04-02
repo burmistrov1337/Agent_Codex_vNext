@@ -150,6 +150,7 @@ class RunEnvelope:
     artifacts: list[Artifact]
     final_summary: str
     alerts: list[str]
+    user_message: str | None = None
     created_at: str = field(default_factory=utc_now_iso)
 
     def to_dict(self) -> dict[str, Any]:

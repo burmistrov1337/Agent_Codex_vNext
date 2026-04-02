@@ -162,6 +162,10 @@ class TelegramBotService:
             task_command = "marketplace-watch"
             request_text = "Запустить marketplace watch по текущему контуру vNext."
 
+        existing = self._find_existing_task_for_message(envelope.chat_id, envelope.message_id)
+        if existing is not None:
+            return
+
         task_id = uuid4().hex[:12]
         attachments = self._materialize_attachments(task_id, envelope.attachments)
         risky = self._is_risky_request(task_command, request_text)
@@ -205,7 +209,7 @@ class TelegramBotService:
         self._save_session(session)
         self.telegram.send_text_to_chat(
             envelope.chat_id,
-            f"Принято в работу. Задача поставлена в очередь: {task.task_id}. Финальный результат пришлю отдельным сообщением.",
+            "Принято в работу. Финальный ответ пришлю отдельным сообщением.",
             reply_to_message_id=envelope.message_id,
         )
 
@@ -259,17 +263,10 @@ class TelegramBotService:
             )
 
     def _send_final_result(self, task: TaskEnvelope, envelope: RunEnvelope) -> None:
-        lines = [
-            "Готово.",
-            f"Запрос: {task.request[:240]}",
-            f"Что сделал: {'; '.join(envelope.task_graph[:3])}",
-            f"Текущее состояние: {envelope.final_summary}",
-        ]
-        if envelope.alerts:
-            lines.append(f"Ограничения: {envelope.alerts[0]}")
+        final_text = self._compose_user_facing_reply(task, envelope)
         self.telegram.send_text_to_chat(
             task.chat_id,
-            "\n".join(lines[:5]),
+            final_text,
             reply_to_message_id=task.message_id,
         )
         for artifact_path in self._select_artifacts_for_delivery(task, envelope):
@@ -279,6 +276,19 @@ class TelegramBotService:
                 caption=f"Артефакт по задаче {task.task_id}",
                 reply_to_message_id=task.message_id,
             )
+
+    def _compose_user_facing_reply(self, task: TaskEnvelope, envelope: RunEnvelope) -> str:
+        if envelope.user_message:
+            base = envelope.user_message.strip()
+        elif task.command == "marketplace-watch":
+            base = "Собрал свежий marketplace watch. Основной результат отправил отдельным файлом."
+        else:
+            base = "Готово. Запрос обработал."
+        if task.command == "marketplace-watch":
+            return base
+        if envelope.alerts:
+            return f"{base}\n\nЕсть ограничения по материалам. Если хочешь, следующим сообщением уточню их коротко."
+        return base
 
     def _select_artifacts_for_delivery(self, task: TaskEnvelope, envelope: RunEnvelope) -> list[str]:
         if task.command == "marketplace-watch":
@@ -485,6 +495,12 @@ class TelegramBotService:
             tasks.append(task)
         tasks.sort(key=lambda item: item.created_at)
         return tasks
+
+    def _find_existing_task_for_message(self, chat_id: str, message_id: int) -> TaskEnvelope | None:
+        for task in self._list_tasks(chat_id=chat_id):
+            if int(task.message_id) == int(message_id) and task.status != "failed":
+                return task
+        return None
 
     def _status_text(self, chat_id: str) -> str:
         tasks = self._list_tasks(chat_id=chat_id)

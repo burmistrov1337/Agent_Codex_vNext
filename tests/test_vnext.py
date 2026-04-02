@@ -127,8 +127,6 @@ class VNextTests(unittest.TestCase):
 
     def test_protected_file_is_blocked(self) -> None:
         with TemporaryDirectory() as tmp:
-            settings = load_settings(tmp)
-            ensure_runtime_layout(settings)
             decision = evaluate_tool_action("write_file", target_path=str(Path(tmp) / ".env"))
             self.assertFalse(decision.allowed)
             self.assertEqual(decision.risk, "high")
@@ -254,13 +252,13 @@ class VNextTests(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             settings, memory, executor = self._make_runtime(tmp)
             telegram = FakeTelegramAdapter(allowed_chat_id="1")
-            telegram.queue_update(build_message_update(100, chat_id="999", message_id=10, text="/ask Привет"))
+            telegram.queue_update(build_message_update(100, chat_id="999", message_id=10, text="/ask привет"))
             service = TelegramBotService(settings=settings, executor=executor, telegram=telegram, memory=memory)
             payload = service.run_polling(once=True)
             self.assertEqual(payload["processed_updates"], 1)
             self.assertEqual(telegram.sent_texts, [])
 
-    def test_telegram_bot_processes_safe_ask_and_sends_final_result(self) -> None:
+    def test_telegram_bot_processes_safe_ask_and_sends_clean_final_result(self) -> None:
         with TemporaryDirectory() as tmp:
             settings, memory, executor = self._make_runtime(tmp)
             telegram = FakeTelegramAdapter()
@@ -270,8 +268,30 @@ class VNextTests(unittest.TestCase):
             self.assertEqual(payload["executed_tasks"], 1)
             self.assertGreaterEqual(len(telegram.sent_texts), 2)
             self.assertIn("Принято в работу", telegram.sent_texts[0]["text"])
-            self.assertIn("Готово.", telegram.sent_texts[-1]["text"])
+            self.assertNotIn("Что сделал", telegram.sent_texts[-1]["text"])
+            self.assertNotIn("Текущее состояние", telegram.sent_texts[-1]["text"])
             self.assertEqual(len(telegram.sent_files), 0)
+
+    def test_telegram_bot_answers_greeting_like_human(self) -> None:
+        with TemporaryDirectory() as tmp:
+            settings, memory, executor = self._make_runtime(tmp)
+            telegram = FakeTelegramAdapter()
+            telegram.queue_update(build_message_update(151, message_id=21, text="/ask привет"))
+            service = TelegramBotService(settings=settings, executor=executor, telegram=telegram, memory=memory)
+            payload = service.run_polling(once=True)
+            self.assertEqual(payload["executed_tasks"], 1)
+            self.assertEqual(telegram.sent_texts[-1]["text"], "Привет. Я на связи.")
+
+    def test_telegram_bot_deduplicates_same_message(self) -> None:
+        with TemporaryDirectory() as tmp:
+            settings, memory, executor = self._make_runtime(tmp)
+            telegram = FakeTelegramAdapter()
+            telegram.queue_update(build_message_update(201, message_id=31, text="/ask привет"))
+            telegram.queue_update(build_message_update(202, message_id=31, text="/ask привет"))
+            service = TelegramBotService(settings=settings, executor=executor, telegram=telegram, memory=memory)
+            payload = service.run_polling(once=True)
+            self.assertEqual(payload["executed_tasks"], 1)
+            self.assertEqual(len(telegram.sent_texts), 2)
 
     def test_telegram_bot_requires_confirm_for_risky_request(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -289,7 +309,7 @@ class VNextTests(unittest.TestCase):
             self.assertEqual(second_pass["executed_tasks"], 1)
             self.assertGreaterEqual(len(telegram.sent_texts), 3)
             self.assertIn("Подтверждение принято", telegram.sent_texts[1]["text"])
-            self.assertIn("Готово.", telegram.sent_texts[-1]["text"])
+            self.assertNotIn("Что сделал", telegram.sent_texts[-1]["text"])
 
     def test_telegram_bot_downloads_document_and_sends_summary_file(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -314,7 +334,7 @@ class VNextTests(unittest.TestCase):
             self.assertGreaterEqual(len(telegram.sent_texts), 2)
             self.assertEqual(len(telegram.sent_files), 1)
             self.assertTrue(telegram.sent_files[0]["file_path"].endswith(".md"))
-            inbox_files = list((settings.telegram_inbox_root).rglob("notes.txt"))
+            inbox_files = list(settings.telegram_inbox_root.rglob("notes.txt"))
             self.assertTrue(inbox_files)
 
     def test_telegram_bot_status_and_cancel(self) -> None:
@@ -374,7 +394,10 @@ class VNextTests(unittest.TestCase):
                 encoding="utf-8",
             )
             buffer = io.StringIO()
-            with patch("agent_codex.apps.cli.main.TelegramBotService.run_polling", return_value={"cycles": 1, "processed_updates": 0, "executed_tasks": 0, "allowed_chat_id": "413513309"}):
+            with patch(
+                "agent_codex.apps.cli.main.TelegramBotService.run_polling",
+                return_value={"cycles": 1, "processed_updates": 0, "executed_tasks": 0, "allowed_chat_id": "413513309"},
+            ):
                 with redirect_stdout(buffer):
                     rc = main(["telegram-bot", "--project-root", tmp, "--once", "--json"])
             self.assertEqual(rc, 0)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict
 from pathlib import Path
+import re
 from uuid import uuid4
 
 from ..commands import COMMANDS
@@ -199,6 +200,11 @@ class AgentExecutor:
             artifacts=[artifact_from_path(summary_path, "markdown", "Telegram request summary")],
             final_summary=final_summary,
             alerts=attachment_limitations[:],
+            user_message=self._build_user_message(
+                normalized_request,
+                attachments=attachments,
+                has_limitations=bool(attachment_limitations),
+            ),
         )
         self.hooks.pre_reply(final_summary)
         self.hooks.post_run(envelope)
@@ -260,6 +266,10 @@ class AgentExecutor:
             ],
             final_summary=final_summary,
             alerts=[],
+            user_message=(
+                f"Собрал свежий marketplace watch. В мониторинге {monitor_result.row_count} SKU. "
+                "Основной результат отправил отдельным файлом."
+            ),
         )
         self.hooks.pre_reply(final_summary)
         self.hooks.post_run(envelope)
@@ -292,3 +302,31 @@ class AgentExecutor:
                 f"Автоматическое извлечение содержимого из {path.name} ({item.kind}) пока не реализовано; файл сохранён для последующей обработки."
             )
         return notes, limitations
+
+    def _build_user_message(
+        self,
+        request: str,
+        *,
+        attachments: list[TelegramAttachment],
+        has_limitations: bool,
+    ) -> str:
+        normalized = " ".join((request or "").strip().split())
+        lowered = normalized.lower()
+        short = re.sub(r"\s+", " ", lowered).strip("!?., ")
+
+        if short in {"привет", "здравствуй", "здравствуйте", "добрый день", "добрый вечер"}:
+            return "Привет. Я на связи."
+        if short in {"ты здесь", "ты тут", "ответь", "ты работаешь"}:
+            return "Да, я на связи и готов работать."
+        if short in {"спасибо", "благодарю"}:
+            return "Пожалуйста. Если хочешь, можем сразу продолжить."
+        if attachments and has_limitations:
+            return (
+                "Материалы получил. Часть файлов сохранил, но не всё смог разобрать автоматически. "
+                "Если хочешь, следующим сообщением скажу, что лучше прислать или в каком виде."
+            )
+        if attachments:
+            return "Материалы получил и подготовил краткий результат. Если нужно, могу углубить разбор."
+        if short.endswith("?"):
+            return "Готово. Короткий ответ подготовил. Если хочешь, могу раскрыть тему подробнее."
+        return "Готово. Запрос обработал. Если хочешь, следующим сообщением продолжу уже по сути задачи."
