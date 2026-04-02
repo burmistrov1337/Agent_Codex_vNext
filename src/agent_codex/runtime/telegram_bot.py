@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import mimetypes
 import re
+import time
 from dataclasses import asdict
 from pathlib import Path
 from uuid import uuid4
@@ -45,9 +46,24 @@ class TelegramBotService:
         cycles = 0
         processed_updates = 0
         executed_tasks = 0
+        last_error: str | None = None
         while True:
-            processed_updates += self.poll_once()
-            executed_tasks += self.process_queue()
+            try:
+                processed_updates += self.poll_once()
+                executed_tasks += self.process_queue()
+                last_error = None
+            except TelegramNotifyError as exc:
+                last_error = str(exc)
+                self.memory.append_daily_log(
+                    "Telegram polling issue",
+                    f"Polling error: {last_error}",
+                )
+                if once:
+                    break
+                if "HTTP 409" in last_error:
+                    time.sleep(3)
+                    continue
+                time.sleep(2)
             cycles += 1
             if once:
                 break
@@ -58,6 +74,7 @@ class TelegramBotService:
             "processed_updates": processed_updates,
             "executed_tasks": executed_tasks,
             "allowed_chat_id": self.telegram.allowed_chat_id,
+            "last_error": last_error,
         }
 
     def poll_once(self) -> int:

@@ -17,6 +17,7 @@ from agent_codex.domains.marketplace.artifacts import (
 )
 from agent_codex.hooks import HookPipeline
 from agent_codex.hooks.policy import evaluate_tool_action
+from agent_codex.integrations.telegram_raw import TelegramNotifyError
 from agent_codex.memory import ConsolidationEngine, MemoryStore
 from agent_codex.runtime import AgentExecutor, Coordinator, TelegramBotService
 
@@ -76,6 +77,11 @@ class FakeTelegramAdapter:
             }
         )
         return {"ok": True}
+
+
+class ConflictTelegramAdapter(FakeTelegramAdapter):
+    def poll_updates(self, *, offset: int | None = None, limit: int = 20) -> list[dict]:
+        raise TelegramNotifyError('Telegram HTTP 409: {"ok":false,"error_code":409}')
 
 
 def build_message_update(
@@ -343,6 +349,16 @@ class VNextTests(unittest.TestCase):
             service.run_polling(once=True)
             self.assertIn("Последние задачи", telegram.sent_texts[0]["text"])
             self.assertIn("Отменил задачу", telegram.sent_texts[1]["text"])
+
+    def test_telegram_bot_handles_polling_conflict_gracefully(self) -> None:
+        with TemporaryDirectory() as tmp:
+            settings, memory, executor = self._make_runtime(tmp)
+            telegram = ConflictTelegramAdapter()
+            service = TelegramBotService(settings=settings, executor=executor, telegram=telegram, memory=memory)
+            payload = service.run_polling(once=True)
+            self.assertEqual(payload["processed_updates"], 0)
+            self.assertEqual(payload["executed_tasks"], 0)
+            self.assertIn("409", payload["last_error"])
 
     def test_telegram_bot_cli_once_json(self) -> None:
         with TemporaryDirectory() as tmp:

@@ -15,3 +15,11 @@ Current deployment assumption:
 - marketplace artifacts are written to `.agent_codex/artifacts/marketplace/`
 - Telegram inbox, polling state, and sessions live under `.agent_codex/telegram/`
 - Telegram delivery is optional and controlled by env configuration
+
+## Windows bot runtime helpers
+
+- `scripts/start_telegram_bot.ps1` starts the bot in background and writes PID/logs
+- `scripts/status_telegram_bot.ps1` shows process state and tail logs
+- `scripts/logs_telegram_bot.ps1` shows stdout/stderr logs and can tail them
+- `scripts/stop_telegram_bot.ps1` stops the background process
+- `scripts/install_telegram_bot_autostart.ps1` registers Windows Task Scheduler autostart

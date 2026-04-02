@@ -47,3 +47,13 @@ Useful commands:
 python -m agent_codex.apps.cli.main telegram-bot
 python -m agent_codex.apps.cli.main telegram-bot --once --json
 ```
+
+Windows helpers:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\start_telegram_bot.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\status_telegram_bot.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\logs_telegram_bot.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\stop_telegram_bot.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\install_telegram_bot_autostart.ps1
+```
