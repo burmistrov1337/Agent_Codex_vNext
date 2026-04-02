@@ -1,11 +1,18 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+from pathlib import Path
 from uuid import uuid4
 
 from ..commands import COMMANDS
 from ..config import Settings
-from ..contracts import RunEnvelope, WorkerContext, WorkerResult
+from ..contracts import (
+    RunEnvelope,
+    TelegramAttachment,
+    WorkerContext,
+    WorkerResult,
+    artifact_from_path,
+)
 from ..domains.marketplace.service import MarketplaceService
 from ..hooks import HookPipeline
 from ..integrations.llm import select_backend
@@ -37,7 +44,11 @@ class AgentExecutor:
             "wb_configured": bool(self.settings.wb_api_token),
             "skills": ", ".join(list_bundled_skills(self.settings.project_root)),
             "commands": ", ".join(item.name for item in COMMANDS),
-            "backends": f"primary={self.settings.primary_reasoning_backend}, background={self.settings.background_backend}, cheap={self.settings.cheap_backend}",
+            "backends": (
+                f"primary={self.settings.primary_reasoning_backend}, "
+                f"background={self.settings.background_backend}, "
+                f"cheap={self.settings.cheap_backend}"
+            ),
         }
 
     def memory_report(self, *, run_consolidation: bool = False) -> dict:
@@ -89,18 +100,127 @@ class AgentExecutor:
         digest_path.write_text("# Study Digest\n\n" + "\n\n".join(f"- {item}" for item in digest), encoding="utf-8")
         return {"digest_path": str(digest_path), "points": len(digest)}
 
+    def run_request(
+        self,
+        request: str,
+        *,
+        attachments: list[TelegramAttachment] | None = None,
+        headless: bool = False,
+        mode: str = "interactive",
+    ) -> RunEnvelope:
+        run_id = uuid4().hex
+        normalized_request = (request or "").strip() or "Проанализировать присланные материалы."
+        attachments = attachments or []
+        attachment_notes, attachment_limitations = self._collect_attachment_notes(attachments)
+
+        effective_request = normalized_request
+        if attachments:
+            attachment_lines = []
+            for item in attachments:
+                label = item.file_name or Path(item.local_path or item.file_id).name
+                attachment_lines.append(f"- {item.kind}: {label}")
+            effective_request = (
+                f"{normalized_request}\n\n"
+                "Контекст вложений:\n"
+                + "\n".join(attachment_lines)
+            )
+
+        self.hooks.pre_task(effective_request, mode=mode)
+        self.memory.write_session_event({"run_id": run_id, "request": effective_request, "mode": mode})
+        ConsolidationEngine(self.settings).record_session_event()
+
+        task_graph = self.coordinator.build_task_graph(effective_request)
+        context = WorkerContext(
+            run_id=run_id,
+            request=effective_request,
+            mode=mode,
+            selected_roles=[task.role for task in task_graph.tasks],
+            project_root=str(self.settings.project_root),
+            runtime_root=str(self.settings.runtime_root),
+            scratchpad_root=str(self.settings.runtime_root / "scratchpad"),
+        )
+        backend = select_backend(self.settings.background_backend if headless else self.settings.primary_reasoning_backend)
+
+        worker_results: list[WorkerResult] = []
+        evidence = [f"attachment:{item.local_path or item.file_name or item.file_id}" for item in attachments]
+        evidence.extend(attachment_notes[:3])
+        evidence.extend(f"limitation:{item}" for item in attachment_limitations[:2])
+        for task in task_graph.tasks:
+            response = backend.run(task, context)
+            output = response.output
+            if attachment_notes:
+                output = output + "\n\nИзвлечённые заметки по вложениям:\n" + "\n".join(f"- {item}" for item in attachment_notes)
+            if attachment_limitations:
+                output = output + "\n\nОграничения:\n" + "\n".join(f"- {item}" for item in attachment_limitations)
+            worker_results.append(
+                WorkerResult(
+                    task_id=task.id,
+                    role=task.role,
+                    status="completed",
+                    summary=response.summary,
+                    output=output,
+                    evidence=evidence,
+                )
+            )
+
+        artifact_dir = self.settings.runtime_root / "artifacts" / "runs" / run_id
+        artifact_dir.mkdir(parents=True, exist_ok=True)
+        summary_path = artifact_dir / "telegram_request_summary.md"
+        summary_lines = [
+            "# Telegram Request Summary",
+            "",
+            f"- Request: {normalized_request}",
+            f"- Mode: {mode}",
+            f"- Roles: {', '.join(context.selected_roles)}",
+            f"- Attachments: {len(attachments)}",
+            "",
+            "## Worker Summaries",
+            "",
+        ]
+        summary_lines.extend(f"- {item.role}: {item.summary}" for item in worker_results)
+        if attachment_notes:
+            summary_lines.extend(["", "## Attachment Notes", ""])
+            summary_lines.extend(f"- {item}" for item in attachment_notes)
+        if attachment_limitations:
+            summary_lines.extend(["", "## Limitations", ""])
+            summary_lines.extend(f"- {item}" for item in attachment_limitations)
+        summary_path.write_text("\n".join(summary_lines) + "\n", encoding="utf-8")
+
+        final_summary = (
+            f"Задача обработана. Ролей в маршруте: {len(context.selected_roles)}. "
+            f"Вложений: {len(attachments)}. Итоговая сводка сохранена: {summary_path}."
+        )
+        envelope = RunEnvelope(
+            run_id=run_id,
+            request=normalized_request,
+            mode=context.mode,
+            task_graph=task_graph.summarize(),
+            results=worker_results,
+            artifacts=[artifact_from_path(summary_path, "markdown", "Telegram request summary")],
+            final_summary=final_summary,
+            alerts=attachment_limitations[:],
+        )
+        self.hooks.pre_reply(final_summary)
+        self.hooks.post_run(envelope)
+        self.memory.append_daily_log(
+            "Generic request run",
+            f"{final_summary}\n\nSummary artifact:\n- {summary_path}",
+        )
+        return envelope
+
     def run_marketplace_watch(self, *, top_limit: int, sample_data: bool, headless: bool) -> RunEnvelope:
         run_id = uuid4().hex
         request = "Marketplace cabinet watch"
-        self.hooks.pre_task(request, mode="headless" if headless else "interactive")
-        self.memory.write_session_event({"run_id": run_id, "request": request, "mode": "headless" if headless else "interactive"})
+        mode = "headless" if headless else "interactive"
+        self.hooks.pre_task(request, mode=mode)
+        self.memory.write_session_event({"run_id": run_id, "request": request, "mode": mode})
         ConsolidationEngine(self.settings).record_session_event()
 
         task_graph = self.coordinator.build_task_graph(request, domain="marketplace")
         context = WorkerContext(
             run_id=run_id,
             request=request,
-            mode="headless" if headless else "interactive",
+            mode=mode,
             selected_roles=[task.role for task in task_graph.tasks],
             project_root=str(self.settings.project_root),
             runtime_root=str(self.settings.runtime_root),
@@ -148,3 +268,27 @@ class AgentExecutor:
             f"{final_summary}\n\nArtifacts:\n- {artifacts.dashboard_html.path}\n- {artifacts.markdown.path}",
         )
         return envelope
+
+    def _collect_attachment_notes(self, attachments: list[TelegramAttachment]) -> tuple[list[str], list[str]]:
+        notes: list[str] = []
+        limitations: list[str] = []
+        for item in attachments:
+            if not item.local_path:
+                limitations.append(f"Вложение {item.file_name or item.file_id} ещё не скачано в runtime inbox.")
+                continue
+            path = Path(item.local_path)
+            if not path.exists():
+                limitations.append(f"Вложение {path.name} не найдено на диске после загрузки.")
+                continue
+            suffix = path.suffix.lower()
+            if suffix in {".txt", ".md"}:
+                text = path.read_text(encoding="utf-8", errors="replace").strip()
+                if text:
+                    notes.append(f"{path.name}: {text[:400].replace(chr(10), ' ')}")
+                else:
+                    limitations.append(f"Вложение {path.name} пустое.")
+                continue
+            limitations.append(
+                f"Автоматическое извлечение содержимого из {path.name} ({item.kind}) пока не реализовано; файл сохранён для последующей обработки."
+            )
+        return notes, limitations

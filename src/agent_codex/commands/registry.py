@@ -18,4 +18,5 @@ COMMANDS = [
     CommandSpec("compact", "Сжать длинный текст до короткой управленческой сводки."),
     CommandSpec("marketplace-watch", "Построить marketplace watch и headless envelope."),
     CommandSpec("study-digest", "Подготовить краткий digest учебного текста."),
+    CommandSpec("telegram-bot", "Запустить Telegram ingress на long polling для асинхронных задач."),
 ]

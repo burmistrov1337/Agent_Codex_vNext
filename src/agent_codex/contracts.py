@@ -43,6 +43,73 @@ class WorkerContext:
 
 
 @dataclass(slots=True)
+class TelegramAttachment:
+    kind: str
+    file_id: str
+    file_name: str | None = None
+    mime_type: str | None = None
+    size_bytes: int | None = None
+    local_path: str | None = None
+
+
+@dataclass(slots=True)
+class TelegramUpdateEnvelope:
+    update_id: int
+    chat_id: str
+    message_id: int
+    text: str
+    command: str | None = None
+    command_args: str | None = None
+    caption: str | None = None
+    attachments: list[TelegramAttachment] = field(default_factory=list)
+    reply_to_message_id: int | None = None
+    received_at: str = field(default_factory=utc_now_iso)
+
+
+@dataclass(slots=True)
+class ConfirmationRequest:
+    confirmation_id: str
+    task_id: str
+    chat_id: str
+    prompt: str
+    status: str = "pending"
+    created_at: str = field(default_factory=utc_now_iso)
+    updated_at: str = field(default_factory=utc_now_iso)
+
+
+@dataclass(slots=True)
+class TelegramConversationSession:
+    session_id: str
+    chat_id: str
+    created_at: str
+    updated_at: str
+    last_message_id: int | None = None
+    last_task_id: str | None = None
+    active_task_id: str | None = None
+    pending_confirmation_id: str | None = None
+
+
+@dataclass(slots=True)
+class TaskEnvelope:
+    task_id: str
+    source: str
+    command: str
+    request: str
+    chat_id: str
+    message_id: int
+    session_id: str
+    status: str
+    attachments: list[TelegramAttachment] = field(default_factory=list)
+    risky: bool = False
+    confirmation_request: ConfirmationRequest | None = None
+    result_summary: str | None = None
+    artifact_paths: list[str] = field(default_factory=list)
+    error: str | None = None
+    created_at: str = field(default_factory=utc_now_iso)
+    updated_at: str = field(default_factory=utc_now_iso)
+
+
+@dataclass(slots=True)
 class Artifact:
     path: str
     kind: str

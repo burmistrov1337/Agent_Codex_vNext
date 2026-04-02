@@ -23,6 +23,8 @@ env/
 .agent_codex/memory/topics/*
 !.agent_codex/memory/topics/.gitkeep
 .agent_codex/memory/.consolidation_state.json
+.agent_codex/telegram/*
+!.agent_codex/telegram/.gitkeep
 
 Thumbs.db
 .DS_Store

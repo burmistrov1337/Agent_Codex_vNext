@@ -9,7 +9,7 @@ from ...hooks import HookPipeline
 from ...integrations.n8n import build_n8n_payload
 from ...integrations.telegram import TelegramAdapter
 from ...memory import MemoryStore
-from ...runtime import AgentExecutor, Coordinator
+from ...runtime import AgentExecutor, Coordinator, TelegramBotService
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -25,6 +25,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--path")
     parser.add_argument("--tool", default="shell")
     parser.add_argument("--run-consolidation", action="store_true")
+    parser.add_argument("--once", action="store_true")
+    parser.add_argument("--max-cycles", type=int)
     return parser
 
 
@@ -38,6 +40,7 @@ def main(argv: list[str] | None = None) -> int:
     coordinator = Coordinator()
     executor = AgentExecutor(settings=settings, coordinator=coordinator, hooks=hooks, memory=memory)
     telegram = TelegramAdapter(settings)
+    telegram_bot = TelegramBotService(settings=settings, executor=executor, telegram=telegram, memory=memory)
 
     if args.command == "doctor":
         payload = executor.doctor_report()
@@ -80,6 +83,9 @@ def main(argv: list[str] | None = None) -> int:
             },
             as_json=False,
         )
+    if args.command == "telegram-bot":
+        payload = telegram_bot.run_polling(once=args.once, max_cycles=args.max_cycles)
+        return _emit(payload, as_json=True if args.json or args.once else False)
     parser.error("Unknown command")
     return 2
 

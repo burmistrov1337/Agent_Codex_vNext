@@ -23,8 +23,7 @@ class TelegramChatPreview:
 
 
 def resolve_latest_chat(bot_token: str, timeout_seconds: int = 30) -> TelegramChatPreview:
-    payload = _telegram_request(bot_token, "getUpdates", timeout_seconds=timeout_seconds)
-    updates = payload.get("result") or []
+    updates = get_updates(bot_token, timeout_seconds=timeout_seconds)
     if not updates:
         raise TelegramNotifyError(
             "Бот пока не видит сообщений. Открой диалог с ботом, отправь /start или любое сообщение и повтори."
@@ -48,19 +47,88 @@ def resolve_latest_chat(bot_token: str, timeout_seconds: int = 30) -> TelegramCh
     raise TelegramNotifyError("Не удалось определить chat_id из обновлений Telegram.")
 
 
+def get_updates(
+    bot_token: str,
+    *,
+    offset: int | None = None,
+    timeout_seconds: int = 30,
+    limit: int = 20,
+) -> list[dict]:
+    data: dict[str, int] = {
+        "timeout": max(0, int(timeout_seconds)),
+        "limit": max(1, min(int(limit), 100)),
+    }
+    if offset is not None:
+        data["offset"] = int(offset)
+    payload = _telegram_request(
+        bot_token,
+        "getUpdates",
+        data=data,
+        timeout_seconds=max(5, int(timeout_seconds) + 5),
+    )
+    result = payload.get("result") or []
+    if not isinstance(result, list):
+        raise TelegramNotifyError("Telegram getUpdates вернул неожиданный формат данных.")
+    return result
+
+
+def get_file_info(bot_token: str, file_id: str, timeout_seconds: int = 30) -> dict:
+    payload = _telegram_request(
+        bot_token,
+        "getFile",
+        data={"file_id": file_id},
+        timeout_seconds=timeout_seconds,
+    )
+    result = payload.get("result") or {}
+    if not isinstance(result, dict) or not result.get("file_path"):
+        raise TelegramNotifyError(f"Telegram getFile не вернул file_path для file_id={file_id}.")
+    return result
+
+
+def download_file(
+    bot_token: str,
+    file_path: str,
+    destination: str | Path,
+    timeout_seconds: int = 60,
+) -> Path:
+    target = Path(destination)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    request = urllib.request.Request(
+        url=f"https://api.telegram.org/file/bot{bot_token}/{file_path}",
+        headers={
+            "Accept": "application/octet-stream",
+            "User-Agent": "Agent_Codex_vNext/1.0",
+        },
+        method="GET",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
+            target.write_bytes(response.read())
+    except urllib.error.HTTPError as exc:
+        details = exc.read().decode("utf-8", errors="replace")
+        raise TelegramNotifyError(f"Telegram file download HTTP {exc.code}: {details}") from exc
+    except urllib.error.URLError as exc:
+        raise TelegramNotifyError(f"Telegram file download network error: {exc.reason}") from exc
+    return target
+
+
 def send_message(
     bot_token: str,
     chat_id: str,
     text: str,
     timeout_seconds: int = 30,
+    reply_to_message_id: int | None = None,
 ) -> dict:
+    data: dict[str, str | int] = {
+        "chat_id": chat_id,
+        "text": text,
+    }
+    if reply_to_message_id is not None:
+        data["reply_to_message_id"] = int(reply_to_message_id)
     return _telegram_request(
         bot_token,
         "sendMessage",
-        data={
-            "chat_id": chat_id,
-            "text": text,
-        },
+        data=data,
         timeout_seconds=timeout_seconds,
     )
 
@@ -71,6 +139,7 @@ def send_document(
     document_path: str | Path,
     caption: str | None = None,
     timeout_seconds: int = 60,
+    reply_to_message_id: int | None = None,
 ) -> dict:
     file_path = Path(document_path)
     if not file_path.exists():
@@ -78,9 +147,11 @@ def send_document(
 
     boundary = f"AgentCodex{uuid.uuid4().hex}"
     payload = bytearray()
-    fields = {"chat_id": chat_id}
+    fields: dict[str, str | int] = {"chat_id": chat_id}
     if caption:
         fields["caption"] = caption
+    if reply_to_message_id is not None:
+        fields["reply_to_message_id"] = int(reply_to_message_id)
 
     for key, value in fields.items():
         payload.extend(f"--{boundary}\r\n".encode("utf-8"))
@@ -118,7 +189,7 @@ def _telegram_request(
     encoded = None
     headers = {
         "Accept": "application/json",
-        "User-Agent": "Agent_Codex/1.0",
+        "User-Agent": "Agent_Codex_vNext/1.0",
     }
     if data is not None:
         encoded = urllib.parse.urlencode(data).encode("utf-8")
@@ -141,7 +212,7 @@ def _telegram_request_bytes(
 ) -> dict:
     request_headers = {
         "Accept": "application/json",
-        "User-Agent": "Agent_Codex/1.0",
+        "User-Agent": "Agent_Codex_vNext/1.0",
     }
     if headers:
         request_headers.update(headers)
