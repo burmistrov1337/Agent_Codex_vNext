@@ -114,45 +114,51 @@ class TelegramBotService:
 
         command = envelope.command or ""
         if command in {"start", "help"}:
-            self.telegram.send_text_to_chat(
+            self._send_checked_text(
                 envelope.chat_id,
                 self._help_text(),
                 reply_to_message_id=envelope.message_id,
+                fallback_text="Я на связи. Напиши /ask <задача> или /marketplace-watch.",
             )
             return
         if command == "status":
-            self.telegram.send_text_to_chat(
+            self._send_checked_text(
                 envelope.chat_id,
                 self._status_text(envelope.chat_id),
                 reply_to_message_id=envelope.message_id,
+                fallback_text="Не смог собрать статус в красивом виде. Попробуй ещё раз через минуту.",
             )
             return
         if command == "cancel":
-            self.telegram.send_text_to_chat(
+            self._send_checked_text(
                 envelope.chat_id,
                 self._cancel_latest_task(session),
                 reply_to_message_id=envelope.message_id,
+                fallback_text="Не смог аккуратно отменить задачу. Попробуй ещё раз.",
             )
             return
         if command == "confirm":
-            self.telegram.send_text_to_chat(
+            self._send_checked_text(
                 envelope.chat_id,
                 self._confirm_pending_task(session),
                 reply_to_message_id=envelope.message_id,
+                fallback_text="Подтверждение принято.",
             )
             return
         if command == "reject":
-            self.telegram.send_text_to_chat(
+            self._send_checked_text(
                 envelope.chat_id,
                 self._reject_pending_task(session),
                 reply_to_message_id=envelope.message_id,
+                fallback_text="Рискованную задачу отменил.",
             )
             return
         if command == "memory":
-            self.telegram.send_text_to_chat(
+            self._send_checked_text(
                 envelope.chat_id,
                 self._memory_text(),
                 reply_to_message_id=envelope.message_id,
+                fallback_text="Память пока почти пустая.",
             )
             return
 
@@ -197,20 +203,22 @@ class TelegramBotService:
             session.last_task_id = task.task_id
             self._save_task(task)
             self._save_session(session)
-            self.telegram.send_text_to_chat(
+            self._send_checked_text(
                 envelope.chat_id,
                 task.confirmation_request.prompt,
                 reply_to_message_id=envelope.message_id,
+                fallback_text="Для этой задачи нужно подтверждение. Отправь /confirm или /reject.",
             )
             return
 
         session.last_task_id = task.task_id
         self._save_task(task)
         self._save_session(session)
-        self.telegram.send_text_to_chat(
+        self._send_checked_text(
             envelope.chat_id,
             "Принято в работу. Финальный ответ пришлю отдельным сообщением.",
             reply_to_message_id=envelope.message_id,
+            fallback_text="Принял задачу. Результат пришлю отдельным сообщением.",
         )
 
     def _execute_task(self, task: TaskEnvelope) -> None:
@@ -252,7 +260,7 @@ class TelegramBotService:
             session.active_task_id = None
             session.last_task_id = task.task_id
             self._save_session(session)
-            self.telegram.send_text_to_chat(
+            self._send_checked_text(
                 task.chat_id,
                 (
                     "Задача завершилась с ошибкой.\n"
@@ -260,14 +268,16 @@ class TelegramBotService:
                     f"Ошибка: {str(exc)[:500]}"
                 ),
                 reply_to_message_id=task.message_id,
+                fallback_text="Задача завершилась с ошибкой. Если хочешь, я переформулирую проблему следующим сообщением.",
             )
 
     def _send_final_result(self, task: TaskEnvelope, envelope: RunEnvelope) -> None:
         final_text = self._compose_user_facing_reply(task, envelope)
-        self.telegram.send_text_to_chat(
+        self._send_checked_text(
             task.chat_id,
             final_text,
             reply_to_message_id=task.message_id,
+            fallback_text="Готово. Результат подготовил в более безопасном и коротком виде.",
         )
         for artifact_path in self._select_artifacts_for_delivery(task, envelope):
             self.telegram.send_file_to_chat(
@@ -304,6 +314,50 @@ class TelegramBotService:
                     selected.append(artifact.path)
                     break
         return selected[:3]
+
+    def _send_checked_text(
+        self,
+        chat_id: str,
+        text: str,
+        *,
+        reply_to_message_id: int | None = None,
+        fallback_text: str,
+    ) -> None:
+        if self._looks_broken_or_internal(text):
+            self.memory.append_daily_log(
+                "Telegram outgoing text blocked",
+                f"Blocked message for chat {chat_id}: {text[:400]}",
+            )
+            safe_text = fallback_text
+        else:
+            safe_text = text
+        self.telegram.send_text_to_chat(
+            chat_id,
+            safe_text,
+            reply_to_message_id=reply_to_message_id,
+        )
+
+    def _looks_broken_or_internal(self, text: str) -> bool:
+        if not text or not text.strip():
+            return True
+        forbidden_fragments = (
+            "Что сделал:",
+            "Текущее состояние:",
+            "Итоговая сводка сохранена:",
+            "Ролей в маршруте:",
+            "Вложений:",
+            "task_id",
+            ".agent_codex\\artifacts",
+        )
+        if any(fragment in text for fragment in forbidden_fragments):
+            return True
+        mojibake_markers = ("РџС", "С‚Р", "РёС", "СЏ", "Р°Р", "РЅР", "СЃС", "РћС", "Р•С")
+        if sum(text.count(marker) for marker in mojibake_markers) >= 2:
+            return True
+        weird_chars = "ЃѓЉЌЋЏђ‘’“”•™љ›њќћџ"
+        if any(char in text for char in weird_chars):
+            return True
+        return False
 
     def _resolve_request_text(self, envelope: TelegramUpdateEnvelope) -> str:
         if envelope.command == "ask":
@@ -582,7 +636,7 @@ class TelegramBotService:
         entries = self.memory.load_index()[:5]
         if not entries:
             return "Память пока почти пустая."
-        lines = ["Последние memory topics:"]
+        lines = ["Последние темы памяти:"]
         for item in entries:
             lines.append(f"- {item.title}")
         return "\n".join(lines)

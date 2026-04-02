@@ -337,6 +337,20 @@ class VNextTests(unittest.TestCase):
             inbox_files = list(settings.telegram_inbox_root.rglob("notes.txt"))
             self.assertTrue(inbox_files)
 
+    def test_telegram_bot_self_check_blocks_internal_summary(self) -> None:
+        with TemporaryDirectory() as tmp:
+            settings, memory, executor = self._make_runtime(tmp)
+            telegram = FakeTelegramAdapter()
+            service = TelegramBotService(settings=settings, executor=executor, telegram=telegram, memory=memory)
+            self.assertTrue(service._looks_broken_or_internal("Что сделал: critic; reviewer"))
+
+    def test_telegram_bot_self_check_blocks_mojibake(self) -> None:
+        with TemporaryDirectory() as tmp:
+            settings, memory, executor = self._make_runtime(tmp)
+            telegram = FakeTelegramAdapter()
+            service = TelegramBotService(settings=settings, executor=executor, telegram=telegram, memory=memory)
+            self.assertTrue(service._looks_broken_or_internal("РџСЂРёРІРµС‚, это битая строка"))
+
     def test_telegram_bot_status_and_cancel(self) -> None:
         with TemporaryDirectory() as tmp:
             settings, memory, executor = self._make_runtime(tmp)
