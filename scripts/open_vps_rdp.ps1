@@ -1,5 +1,5 @@
 param(
-    [string]$Host = "135.136.186.133",
+    [string]$ServerHost = "135.136.186.133",
     [string]$User = "agentcodex",
     [string]$KeyPath = "$HOME\.ssh\id_ed25519_agentcodex_vps",
     [int]$LocalPort = 3390
@@ -11,7 +11,7 @@ $tunnelScript = Join-Path $scriptRoot "start_vps_rdp_tunnel.ps1"
 Start-Process -FilePath "powershell.exe" -ArgumentList @(
     "-ExecutionPolicy", "Bypass",
     "-File", $tunnelScript,
-    "-Host", $Host,
+    "-ServerHost", $ServerHost,
     "-User", $User,
     "-KeyPath", $KeyPath,
     "-LocalPort", $LocalPort

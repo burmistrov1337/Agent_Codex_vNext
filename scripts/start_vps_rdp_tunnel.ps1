@@ -1,5 +1,5 @@
 param(
-    [string]$Host = "135.136.186.133",
+    [string]$ServerHost = "135.136.186.133",
     [string]$User = "agentcodex",
     [string]$KeyPath = "$HOME\.ssh\id_ed25519_agentcodex_vps",
     [int]$LocalPort = 3390
@@ -13,7 +13,7 @@ if (-not (Test-Path $resolvedKey)) {
 $sshArgs = @(
     "-i", $resolvedKey,
     "-L", "${LocalPort}:127.0.0.1:3389",
-    "${User}@${Host}",
+    "${User}@${ServerHost}",
     "-N"
 )
 
