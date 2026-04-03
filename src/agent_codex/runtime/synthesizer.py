@@ -8,6 +8,7 @@ class Synthesizer:
         facts: list[str] = []
         limitations: list[str] = list(synthesis_input.alerts)
         next_actions: list[str] = []
+        useful_outputs: list[str] = []
 
         for artifact in synthesis_input.artifacts:
             facts.append(f"Артефакт готов: {artifact.label}")
@@ -15,6 +16,8 @@ class Synthesizer:
         for result in synthesis_input.worker_results:
             if result.evidence:
                 facts.append(f"{result.role}: {', '.join(result.evidence[:2])}")
+            if result.output and "Backend is not configured." not in result.output:
+                useful_outputs.append(result.output.strip())
             limitations.extend(result.gaps)
             next_actions.extend(result.follow_up_actions)
 
@@ -25,15 +28,20 @@ class Synthesizer:
         limitations = list(dict.fromkeys(limitations))
         next_actions = list(dict.fromkeys(next_actions))
 
-        summary = (
-            f"Собран прогон в режиме {synthesis_input.mode}. "
-            f"Задач в графе: {len(synthesis_input.task_graph)}. "
-            f"Получено результатов workers: {len(synthesis_input.worker_results)}."
-        )
-        user_message = (
-            "Готово. Собрал результат и свёл его в один понятный ответ. "
-            "Если хочешь, следующим сообщением могу продолжить уже по следующему конкретному шагу."
-        )
+        if useful_outputs:
+            summary = useful_outputs[0][:500]
+            user_message = useful_outputs[0][:2000]
+        else:
+            summary = (
+                f"Собран прогон в режиме {synthesis_input.mode}. "
+                f"Задач в графе: {len(synthesis_input.task_graph)}. "
+                f"Получено результатов workers: {len(synthesis_input.worker_results)}."
+            )
+            user_message = (
+                "Готово. Собрал результат и свёл его в один понятный ответ. "
+                "Если хочешь, следующим сообщением могу продолжить уже по следующему конкретному шагу."
+            )
+
         return SynthesisOutcome(
             final_summary=summary,
             user_message=user_message,

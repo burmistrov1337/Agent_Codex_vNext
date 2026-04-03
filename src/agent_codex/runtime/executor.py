@@ -124,11 +124,7 @@ class AgentExecutor:
             for item in attachments:
                 label = item.file_name or Path(item.local_path or item.file_id).name
                 attachment_lines.append(f"- {item.kind}: {label}")
-            effective_request = (
-                f"{normalized_request}\n\n"
-                "Контекст вложений:\n"
-                + "\n".join(attachment_lines)
-            )
+            effective_request = f"{normalized_request}\n\nКонтекст вложений:\n" + "\n".join(attachment_lines)
 
         self.hooks.pre_task(effective_request, mode=mode)
         self.memory.write_session_event({"run_id": run_id, "request": effective_request, "mode": mode})
@@ -193,6 +189,7 @@ class AgentExecutor:
             normalized_request,
             attachments=attachments,
             has_limitations=bool(attachment_limitations),
+            synthesis_message=synthesis.user_message,
         )
         envelope = RunEnvelope(
             run_id=run_id,
@@ -296,7 +293,11 @@ class AgentExecutor:
         attachments = attachments or []
         attachment_notes = attachment_notes or []
         attachment_limitations = attachment_limitations or []
-        backend = select_backend(self.settings.background_backend if headless else self.settings.primary_reasoning_backend)
+        backend = select_backend(
+            self.settings.background_backend if headless else self.settings.primary_reasoning_backend,
+            groq_api_key=self.settings.groq_api_key,
+            groq_model=self.settings.groq_model,
+        )
         evidence = [f"attachment:{item.local_path or item.file_name or item.file_id}" for item in attachments]
         evidence.extend(attachment_notes[:3])
         evidence.extend(f"limitation:{item}" for item in attachment_limitations[:2])
@@ -358,6 +359,7 @@ class AgentExecutor:
         *,
         attachments: list[TelegramAttachment],
         has_limitations: bool,
+        synthesis_message: str | None = None,
     ) -> str:
         normalized = " ".join((request or "").strip().split())
         lowered = normalized.lower()
@@ -376,6 +378,8 @@ class AgentExecutor:
             )
         if attachments:
             return "Материалы получил и подготовил краткий результат. Если нужно, могу углубить разбор."
+        if synthesis_message and synthesis_message.strip():
+            return synthesis_message.strip()
         if normalized.endswith("?"):
             return "Готово. Короткий ответ подготовил. Если хочешь, могу раскрыть тему подробнее."
         return "Готово. Запрос обработал. Если хочешь, следующим сообщением продолжу уже по сути задачи."

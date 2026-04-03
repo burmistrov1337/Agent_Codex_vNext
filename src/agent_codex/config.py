@@ -19,6 +19,8 @@ class Settings:
     primary_reasoning_backend: str
     background_backend: str
     cheap_backend: str
+    groq_api_key: str | None
+    groq_model: str
     marketplace_artifact_root: Path
 
 
@@ -47,6 +49,8 @@ def load_settings(project_root: str | Path = ".") -> Settings:
         primary_reasoning_backend=env.get("PRIMARY_REASONING_BACKEND", "deterministic"),
         background_backend=env.get("BACKGROUND_BACKEND", "deterministic"),
         cheap_backend=env.get("CHEAP_BACKEND", "deterministic"),
+        groq_api_key=env.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY"),
+        groq_model=env.get("GROQ_MODEL", "llama-3.3-70b-versatile"),
         marketplace_artifact_root=artifact_root.resolve(),
     )
 
