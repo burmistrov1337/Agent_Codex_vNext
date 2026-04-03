@@ -9,16 +9,14 @@ $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $tunnelScript = Join-Path $scriptRoot "start_vps_rdp_tunnel.ps1"
 $profileScript = Join-Path $scriptRoot "create_vps_rdp_profile.ps1"
 
-Start-Process -FilePath "powershell.exe" -ArgumentList @(
-    "-ExecutionPolicy", "Bypass",
-    "-File", $tunnelScript,
-    "-ServerHost", $ServerHost,
-    "-User", $User,
-    "-KeyPath", $KeyPath,
-    "-LocalPort", $LocalPort
-) -WindowStyle Normal
+$tunnelOutput = powershell -ExecutionPolicy Bypass -File $tunnelScript `
+    -ServerHost $ServerHost `
+    -User $User `
+    -KeyPath $KeyPath `
+    -LocalPort $LocalPort
 
-Start-Sleep -Seconds 3
+$tunnelOutput | ForEach-Object { Write-Host $_ }
+
 $rdpPath = powershell -ExecutionPolicy Bypass -File $profileScript -LocalPort $LocalPort -User $User
 $rdpPath = ($rdpPath | Select-Object -Last 1).Trim()
 if (-not (Test-Path $rdpPath)) {
