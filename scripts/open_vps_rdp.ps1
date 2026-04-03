@@ -7,6 +7,7 @@ param(
 
 $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $tunnelScript = Join-Path $scriptRoot "start_vps_rdp_tunnel.ps1"
+$profileScript = Join-Path $scriptRoot "create_vps_rdp_profile.ps1"
 
 Start-Process -FilePath "powershell.exe" -ArgumentList @(
     "-ExecutionPolicy", "Bypass",
@@ -18,4 +19,9 @@ Start-Process -FilePath "powershell.exe" -ArgumentList @(
 ) -WindowStyle Normal
 
 Start-Sleep -Seconds 3
-Start-Process -FilePath "mstsc.exe" -ArgumentList "/v:127.0.0.1:$LocalPort"
+$rdpPath = powershell -ExecutionPolicy Bypass -File $profileScript -LocalPort $LocalPort -User $User
+$rdpPath = ($rdpPath | Select-Object -Last 1).Trim()
+if (-not (Test-Path $rdpPath)) {
+    throw "RDP profile was not created: $rdpPath"
+}
+Start-Process -FilePath "mstsc.exe" -ArgumentList "`"$rdpPath`""
