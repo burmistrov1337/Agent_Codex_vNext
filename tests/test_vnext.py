@@ -11,6 +11,7 @@ from unittest.mock import patch
 
 from agent_codex.apps.cli.main import main
 from agent_codex.config import ensure_runtime_layout, load_settings
+from agent_codex.contracts import SynthesisOutcome, WorkerResult
 from agent_codex.domains.marketplace.artifacts import (
     render_watch_dashboard_html,
     render_watch_summary_markdown,
@@ -168,6 +169,40 @@ class VNextTests(unittest.TestCase):
         roles = [task.role for task in graph.tasks]
         self.assertEqual(roles, ["marketplace_analyst", "critic", "reviewer"])
 
+    def test_coordinator_decides_continue_when_gaps_exist(self) -> None:
+        coordinator = Coordinator()
+        synthesis = SynthesisOutcome(final_summary="ok")
+        result = coordinator.decide_continuation(
+            [
+                WorkerResult(
+                    task_id="a",
+                    role="critic",
+                    status="completed",
+                    summary="s",
+                    output="o",
+                    gaps=["not enough evidence"],
+                )
+            ],
+            synthesis,
+        )
+        self.assertEqual(result.continuation_strategy, "continue_existing_branch")
+        self.assertFalse(result.next_step_spec["spawn_ready"])
+        self.assertIn("blocking_gaps", result.next_step_spec)
+
+    def test_coordinator_decides_spawn_when_followups_are_independent(self) -> None:
+        coordinator = Coordinator()
+        synthesis = SynthesisOutcome(final_summary="ok")
+        result = coordinator.decide_continuation(
+            [
+                WorkerResult(task_id="a", role="marketplace_analyst", status="completed", summary="s", output="o", follow_up_actions=["step1"]),
+                WorkerResult(task_id="b", role="critic", status="completed", summary="s", output="o", follow_up_actions=["step2"]),
+                WorkerResult(task_id="c", role="reviewer", status="completed", summary="s", output="o", follow_up_actions=["step3"]),
+            ],
+            synthesis,
+        )
+        self.assertEqual(result.continuation_strategy, "spawn_new_branch")
+        self.assertTrue(result.next_step_spec["spawn_ready"])
+
     def test_marketplace_watch_headless_run_returns_artifacts(self) -> None:
         with TemporaryDirectory() as tmp:
             settings, memory, executor = self._make_runtime(tmp)
@@ -177,6 +212,8 @@ class VNextTests(unittest.TestCase):
             self.assertTrue(any("marketplace_analyst" in line for line in envelope.task_graph))
             self.assertTrue(settings.marketplace_artifact_root.exists())
             self.assertTrue(memory.index_path.exists())
+            self.assertIsNotNone(envelope.synthesis)
+            self.assertIsInstance(envelope.synthesis.next_step_spec, dict)
 
     def test_doctor_command_json(self) -> None:
         with TemporaryDirectory() as tmp:

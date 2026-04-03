@@ -21,6 +21,10 @@ class Synthesizer:
         if not next_actions:
             next_actions.append("Координатору стоит перевести результат в следующий конкретный шаг без ленивого handoff.")
 
+        facts = list(dict.fromkeys(facts))
+        limitations = list(dict.fromkeys(limitations))
+        next_actions = list(dict.fromkeys(next_actions))
+
         summary = (
             f"Собран прогон в режиме {synthesis_input.mode}. "
             f"Задач в графе: {len(synthesis_input.task_graph)}. "
@@ -36,4 +40,14 @@ class Synthesizer:
             facts=facts[:6],
             limitations=limitations[:6],
             next_actions=next_actions[:6],
+            continuation_strategy="continue_existing_branch",
+            next_step_spec={
+                "action": "continue_existing_branch",
+                "owner_role": None,
+                "goal": "Собрать следующий конкретный шаг из worker results.",
+                "blocking_gaps": limitations[:3],
+                "input_refs": [],
+                "done_when": ["Есть один конкретный следующий deliverable."],
+                "spawn_ready": False,
+            },
         )

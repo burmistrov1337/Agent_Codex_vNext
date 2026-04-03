@@ -258,10 +258,16 @@ class TelegramBotService:
             self._save_session(session)
             self._send_final_result(task, envelope)
         except Exception as exc:  # noqa: BLE001
-            task = self.task_bus.fail(task, error=str(exc))
+            task = self.task_bus.retry(task, error=str(exc), delay_seconds=5)
             session.active_task_id = None
             session.last_task_id = task.task_id
             self._save_session(session)
+            if task.status == "queued":
+                self.memory.append_daily_log(
+                    "Telegram task re-queued",
+                    f"Task {task.task_id} returned to queue after error: {str(exc)[:400]}",
+                )
+                return
             self._send_checked_text(
                 task.chat_id,
                 (

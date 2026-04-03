@@ -95,6 +95,7 @@ class TaskLease:
     leased_at: str = field(default_factory=utc_now_iso)
     lease_expires_at: str | None = None
     attempt: int = 1
+    last_heartbeat_at: str | None = None
 
 
 @dataclass(slots=True)
@@ -117,6 +118,8 @@ class TaskEnvelope:
     result_envelope_path: str | None = None
     result_summary: str | None = None
     artifact_paths: list[str] = field(default_factory=list)
+    retry_not_before: str | None = None
+    last_attempt_error: str | None = None
     last_error: str | None = None
     error: str | None = None
     created_at: str = field(default_factory=utc_now_iso)
@@ -173,6 +176,9 @@ class SynthesisOutcome:
     facts: list[str] = field(default_factory=list)
     limitations: list[str] = field(default_factory=list)
     next_actions: list[str] = field(default_factory=list)
+    continuation_strategy: str = "continue_existing_branch"
+    next_step_spec: dict[str, Any] | None = None
+    suggested_role: str | None = None
 
 
 @dataclass(slots=True)

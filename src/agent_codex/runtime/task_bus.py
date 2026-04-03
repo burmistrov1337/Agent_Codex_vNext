@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from ..contracts import ConfirmationRequest, TaskEnvelope, TaskLease, TelegramAttachment, utc_now_iso
@@ -59,6 +59,8 @@ class TaskBus:
             result_envelope_path=data.get("result_envelope_path"),
             result_summary=data.get("result_summary"),
             artifact_paths=list(data.get("artifact_paths") or []),
+            retry_not_before=data.get("retry_not_before"),
+            last_attempt_error=data.get("last_attempt_error"),
             last_error=data.get("last_error"),
             error=data.get("error"),
             created_at=data["created_at"],
@@ -81,14 +83,19 @@ class TaskBus:
 
     def claim_ready(self, *, worker_id: str, lease_ttl_seconds: int = 300) -> TaskEnvelope | None:
         now = datetime.now(timezone.utc)
-        for task in self.list_tasks(statuses={"queued"}):
-            if task.lease and not self._lease_expired(task.lease, now=now):
+        for task in self.list_tasks():
+            if task.status in {"leased", "running"} and task.lease and self._lease_expired(task.lease, now=now):
+                if not self.can_retry(task):
+                    self.fail(task, error=task.last_attempt_error or task.error or "Retry budget exhausted")
+                    continue
+            if not self._is_claimable(task, now=now):
                 continue
             task.attempt_count += 1
-            task.lease = TaskLease(
+            task.retry_not_before = None
+            task.lease = self._build_lease(
                 worker_id=worker_id,
-                leased_at=utc_now_iso(),
-                lease_expires_at=self._lease_expiry(now, lease_ttl_seconds),
+                now=now,
+                ttl_seconds=lease_ttl_seconds,
                 attempt=task.attempt_count,
             )
             task.status = "leased"
@@ -97,19 +104,46 @@ class TaskBus:
             return task
         return None
 
-    def mark_running(self, task: TaskEnvelope, *, run_id: str | None = None) -> TaskEnvelope:
-        task.status = "running"
-        task.run_id = run_id or task.run_id
+    def heartbeat(self, task: TaskEnvelope, *, worker_id: str | None = None, lease_ttl_seconds: int = 300) -> TaskEnvelope:
+        now = datetime.now(timezone.utc)
+        worker = worker_id or (task.lease.worker_id if task.lease else "worker")
+        attempt = task.attempt_count if task.attempt_count > 0 else 1
+        task.lease = self._build_lease(worker_id=worker, now=now, ttl_seconds=lease_ttl_seconds, attempt=attempt)
         task.updated_at = utc_now_iso()
         self.save(task)
         return task
 
-    def complete(self, task: TaskEnvelope, *, run_id: str, result_envelope_path: str, result_summary: str, artifact_paths: list[str]) -> TaskEnvelope:
+    def release(self, task: TaskEnvelope, *, status: str = "queued") -> TaskEnvelope:
+        task.status = status
+        task.lease = None
+        task.updated_at = utc_now_iso()
+        self.save(task)
+        return task
+
+    def mark_running(self, task: TaskEnvelope, *, run_id: str | None = None) -> TaskEnvelope:
+        task.status = "running"
+        task.run_id = run_id or task.run_id
+        task = self.heartbeat(task, worker_id=task.lease.worker_id if task.lease else None)
+        task.updated_at = utc_now_iso()
+        self.save(task)
+        return task
+
+    def complete(
+        self,
+        task: TaskEnvelope,
+        *,
+        run_id: str,
+        result_envelope_path: str,
+        result_summary: str,
+        artifact_paths: list[str],
+    ) -> TaskEnvelope:
         task.status = "completed"
         task.run_id = run_id
         task.result_envelope_path = result_envelope_path
         task.result_summary = result_summary
         task.artifact_paths = artifact_paths
+        task.retry_not_before = None
+        task.last_attempt_error = None
         task.last_error = None
         task.error = None
         task.lease = None
@@ -117,10 +151,29 @@ class TaskBus:
         self.save(task)
         return task
 
+    def retry(self, task: TaskEnvelope, *, error: str, delay_seconds: int = 5) -> TaskEnvelope:
+        task.last_attempt_error = error
+        task.last_error = error
+        task.error = None
+        task.lease = None
+        if self.can_retry(task):
+            task.status = "queued"
+            retry_at = datetime.now(timezone.utc) + timedelta(seconds=delay_seconds)
+            task.retry_not_before = retry_at.replace(microsecond=0).isoformat()
+        else:
+            task.status = "failed"
+            task.retry_not_before = None
+            task.error = error
+        task.updated_at = utc_now_iso()
+        self.save(task)
+        return task
+
     def fail(self, task: TaskEnvelope, *, error: str) -> TaskEnvelope:
         task.status = "failed"
+        task.last_attempt_error = error
         task.last_error = error
         task.error = error
+        task.retry_not_before = None
         task.lease = None
         task.updated_at = utc_now_iso()
         self.save(task)
@@ -128,6 +181,7 @@ class TaskBus:
 
     def cancel(self, task: TaskEnvelope) -> TaskEnvelope:
         task.status = "cancelled"
+        task.retry_not_before = None
         task.lease = None
         task.updated_at = utc_now_iso()
         self.save(task)
@@ -138,6 +192,7 @@ class TaskBus:
             task.confirmation_request.status = "confirmed"
             task.confirmation_request.updated_at = utc_now_iso()
         task.status = "queued"
+        task.retry_not_before = None
         task.updated_at = utc_now_iso()
         self.save(task)
         return task
@@ -148,8 +203,21 @@ class TaskBus:
             task.confirmation_request.updated_at = utc_now_iso()
         return self.cancel(task)
 
+    def can_retry(self, task: TaskEnvelope) -> bool:
+        return task.attempt_count < task.max_attempts
+
     def path_for(self, task_id: str) -> Path:
         return self.tasks_root / f"{self.prefix}{task_id}.json"
+
+    def _is_claimable(self, task: TaskEnvelope, *, now: datetime) -> bool:
+        if task.status == "awaiting_confirmation":
+            return False
+        if task.status == "queued":
+            retry_at = _parse_iso(task.retry_not_before)
+            return retry_at is None or retry_at <= now
+        if task.status in {"leased", "running"} and task.lease and self._lease_expired(task.lease, now=now):
+            return True
+        return False
 
     def _lease_expired(self, lease: TaskLease, *, now: datetime) -> bool:
         expires = _parse_iso(lease.lease_expires_at)
@@ -157,5 +225,13 @@ class TaskBus:
             return True
         return expires <= now
 
-    def _lease_expiry(self, now: datetime, ttl_seconds: int) -> str:
-        return datetime.fromtimestamp(now.timestamp() + ttl_seconds, tz=timezone.utc).replace(microsecond=0).isoformat()
+    def _build_lease(self, *, worker_id: str, now: datetime, ttl_seconds: int, attempt: int) -> TaskLease:
+        issued_at = now.replace(microsecond=0).isoformat()
+        expires_at = (now + timedelta(seconds=ttl_seconds)).replace(microsecond=0).isoformat()
+        return TaskLease(
+            worker_id=worker_id,
+            leased_at=issued_at,
+            lease_expires_at=expires_at,
+            attempt=attempt,
+            last_heartbeat_at=issued_at,
+        )

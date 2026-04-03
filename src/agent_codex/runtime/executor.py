@@ -187,6 +187,7 @@ class AgentExecutor:
                 alerts=attachment_limitations[:],
             )
         )
+        synthesis = self.coordinator.decide_continuation(worker_results, synthesis)
 
         user_message = self._build_user_message(
             normalized_request,
@@ -251,6 +252,7 @@ class AgentExecutor:
                 alerts=[],
             )
         )
+        synthesis = self.coordinator.decide_continuation(worker_results, synthesis)
         final_summary = (
             f"{synthesis.final_summary} SKU в мониторинге: {monitor_result.row_count}. "
             f"Основной артефакт: {monitor_artifacts.dashboard_html.path}."
