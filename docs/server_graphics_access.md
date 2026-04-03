@@ -40,6 +40,15 @@ Use the Linux account:
 - username: `agentcodex`
 - password: the server password currently assigned to `agentcodex`
 
+## Keyboard layout
+
+The remote desktop session is configured with:
+
+- English + Russian layouts
+- switch shortcut: `Alt` + `Shift`
+
+If the current session was opened before this change, disconnect and reconnect once.
+
 ## How to use Agent_Codex from the server desktop
 
 The first practical paths are:
