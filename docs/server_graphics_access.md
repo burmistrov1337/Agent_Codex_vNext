@@ -6,6 +6,7 @@ The VPS uses a lightweight desktop stack:
 
 - `XFCE`
 - `xrdp`
+- `Falkon` browser
 - local-only RDP access through an SSH tunnel
 
 Port `3389` is not intended to be exposed publicly. Connect through SSH tunneling from the local Windows machine.
@@ -43,27 +44,28 @@ Use the Linux account:
 
 The first practical paths are:
 
-1. Open the terminal in the remote desktop session.
-2. Go to the deployed project:
+1. Open `Falkon` if you want to use the familiar browser route and sign in to the web chat you already use.
+2. Open the terminal if you want to manage the local `Agent_Codex_vNext` runtime directly.
+3. Go to the deployed project:
 
 ```bash
 cd /opt/agent_codex_vnext
 ```
 
-3. Check status:
+4. Check status:
 
 ```bash
 docker compose ps
 docker compose logs --tail=100 agent_codex_bot
 ```
 
-4. Run a one-shot command inside the bot container:
+5. Run a one-shot command inside the bot container:
 
 ```bash
 docker compose exec agent_codex_bot python -m agent_codex.apps.cli.main doctor --project-root /app --json
 ```
 
-5. For live conversational usage, keep using the Telegram bot as the main ingress. The remote desktop is the visual admin layer around the same runtime.
+6. For live conversational usage of the deployed runtime, keep using the Telegram bot as the main ingress. The remote desktop is the visual admin layer around the same runtime.
 
 ## Notes
 

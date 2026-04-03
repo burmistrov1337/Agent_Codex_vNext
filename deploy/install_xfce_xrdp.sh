@@ -5,7 +5,7 @@ ADMIN_USER="${1:-agentcodex}"
 export DEBIAN_FRONTEND=noninteractive
 
 sudo apt-get update
-sudo apt-get install -y xfce4 xfce4-goodies xrdp xorgxrdp dbus-x11 xterm
+sudo apt-get install -y xfce4 xfce4-goodies xrdp xorgxrdp dbus-x11 xterm falkon
 
 echo "startxfce4" | sudo tee "/home/${ADMIN_USER}/.xsession" >/dev/null
 sudo chown "${ADMIN_USER}:${ADMIN_USER}" "/home/${ADMIN_USER}/.xsession"
