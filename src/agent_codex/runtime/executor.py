@@ -1,14 +1,16 @@
 from __future__ import annotations
 
+import json
+import re
 from dataclasses import asdict
 from pathlib import Path
-import re
 from uuid import uuid4
 
 from ..commands import COMMANDS
 from ..config import Settings
 from ..contracts import (
     RunEnvelope,
+    SynthesisInput,
     TelegramAttachment,
     WorkerContext,
     WorkerResult,
@@ -20,6 +22,7 @@ from ..integrations.llm import select_backend
 from ..memory import ConsolidationEngine, MemoryStore
 from ..skills import list_bundled_skills
 from .coordinator import Coordinator
+from .synthesizer import Synthesizer
 
 
 class AgentExecutor:
@@ -36,6 +39,7 @@ class AgentExecutor:
         self.hooks = hooks
         self.memory = memory
         self.marketplace = MarketplaceService(settings)
+        self.synthesizer = Synthesizer()
 
     def doctor_report(self) -> dict:
         return {
@@ -140,29 +144,14 @@ class AgentExecutor:
             runtime_root=str(self.settings.runtime_root),
             scratchpad_root=str(self.settings.runtime_root / "scratchpad"),
         )
-        backend = select_backend(self.settings.background_backend if headless else self.settings.primary_reasoning_backend)
-
-        worker_results: list[WorkerResult] = []
-        evidence = [f"attachment:{item.local_path or item.file_name or item.file_id}" for item in attachments]
-        evidence.extend(attachment_notes[:3])
-        evidence.extend(f"limitation:{item}" for item in attachment_limitations[:2])
-        for task in task_graph.tasks:
-            response = backend.run(task, context)
-            output = response.output
-            if attachment_notes:
-                output = output + "\n\nИзвлечённые заметки по вложениям:\n" + "\n".join(f"- {item}" for item in attachment_notes)
-            if attachment_limitations:
-                output = output + "\n\nОграничения:\n" + "\n".join(f"- {item}" for item in attachment_limitations)
-            worker_results.append(
-                WorkerResult(
-                    task_id=task.id,
-                    role=task.role,
-                    status="completed",
-                    summary=response.summary,
-                    output=output,
-                    evidence=evidence,
-                )
-            )
+        worker_results = self._execute_workers(
+            task_graph=task_graph,
+            context=context,
+            headless=headless,
+            attachments=attachments,
+            attachment_notes=attachment_notes,
+            attachment_limitations=attachment_limitations,
+        )
 
         artifact_dir = self.settings.runtime_root / "artifacts" / "runs" / run_id
         artifact_dir.mkdir(parents=True, exist_ok=True)
@@ -187,9 +176,22 @@ class AgentExecutor:
             summary_lines.extend(f"- {item}" for item in attachment_limitations)
         summary_path.write_text("\n".join(summary_lines) + "\n", encoding="utf-8")
 
-        final_summary = (
-            f"Задача обработана. Ролей в маршруте: {len(context.selected_roles)}. "
-            f"Вложений: {len(attachments)}. Итоговая сводка сохранена: {summary_path}."
+        artifacts = [artifact_from_path(summary_path, "markdown", "Telegram request summary")]
+        synthesis = self.synthesizer.synthesize(
+            SynthesisInput(
+                request=normalized_request,
+                mode=context.mode,
+                task_graph=task_graph.summarize(),
+                worker_results=worker_results,
+                artifacts=artifacts,
+                alerts=attachment_limitations[:],
+            )
+        )
+
+        user_message = self._build_user_message(
+            normalized_request,
+            attachments=attachments,
+            has_limitations=bool(attachment_limitations),
         )
         envelope = RunEnvelope(
             run_id=run_id,
@@ -197,20 +199,18 @@ class AgentExecutor:
             mode=context.mode,
             task_graph=task_graph.summarize(),
             results=worker_results,
-            artifacts=[artifact_from_path(summary_path, "markdown", "Telegram request summary")],
-            final_summary=final_summary,
+            artifacts=artifacts,
+            final_summary=synthesis.final_summary,
             alerts=attachment_limitations[:],
-            user_message=self._build_user_message(
-                normalized_request,
-                attachments=attachments,
-                has_limitations=bool(attachment_limitations),
-            ),
+            user_message=user_message,
+            synthesis=synthesis,
         )
-        self.hooks.pre_reply(final_summary)
+        envelope_path = self._persist_run_envelope(envelope, artifact_dir)
+        self.hooks.pre_reply(envelope.final_summary)
         self.hooks.post_run(envelope)
         self.memory.append_daily_log(
             "Generic request run",
-            f"{final_summary}\n\nSummary artifact:\n- {summary_path}",
+            f"{envelope.final_summary}\n\nSummary artifact:\n- {summary_path}\n- Run envelope: {envelope_path}",
         )
         return envelope
 
@@ -232,25 +232,28 @@ class AgentExecutor:
             runtime_root=str(self.settings.runtime_root),
             scratchpad_root=str(self.settings.runtime_root / "scratchpad"),
         )
-        backend = select_backend(self.settings.background_backend if headless else self.settings.primary_reasoning_backend)
 
-        monitor_result, artifacts = self.marketplace.run_watch(top_limit=top_limit, sample_data=sample_data)
-        worker_results: list[WorkerResult] = []
-        for task in task_graph.tasks:
-            response = backend.run(task, context)
-            worker_results.append(
-                WorkerResult(
-                    task_id=task.id,
-                    role=task.role,
-                    status="completed",
-                    summary=response.summary,
-                    output=response.output,
-                    evidence=[f"artifact:{artifacts.dashboard_html.path}", f"rows:{monitor_result.row_count}"],
-                )
+        monitor_result, monitor_artifacts = self.marketplace.run_watch(top_limit=top_limit, sample_data=sample_data)
+        worker_results = self._execute_workers(task_graph=task_graph, context=context, headless=headless)
+        artifacts = [
+            monitor_artifacts.markdown,
+            monitor_artifacts.summary_markdown,
+            monitor_artifacts.dashboard_html,
+            monitor_artifacts.workbook,
+        ]
+        synthesis = self.synthesizer.synthesize(
+            SynthesisInput(
+                request=request,
+                mode=context.mode,
+                task_graph=task_graph.summarize(),
+                worker_results=worker_results,
+                artifacts=artifacts,
+                alerts=[],
             )
+        )
         final_summary = (
-            f"Построен marketplace watch. SKU в мониторинге: {monitor_result.row_count}. "
-            f"Основной артефакт: {artifacts.dashboard_html.path}."
+            f"{synthesis.final_summary} SKU в мониторинге: {monitor_result.row_count}. "
+            f"Основной артефакт: {monitor_artifacts.dashboard_html.path}."
         )
         envelope = RunEnvelope(
             run_id=run_id,
@@ -258,26 +261,70 @@ class AgentExecutor:
             mode=context.mode,
             task_graph=task_graph.summarize(),
             results=worker_results,
-            artifacts=[
-                artifacts.markdown,
-                artifacts.summary_markdown,
-                artifacts.dashboard_html,
-                artifacts.workbook,
-            ],
+            artifacts=artifacts,
             final_summary=final_summary,
             alerts=[],
             user_message=(
                 f"Собрал свежий marketplace watch. В мониторинге {monitor_result.row_count} SKU. "
                 "Основной результат отправил отдельным файлом."
             ),
+            synthesis=synthesis,
         )
-        self.hooks.pre_reply(final_summary)
+        artifact_dir = self.settings.runtime_root / "artifacts" / "runs" / run_id
+        artifact_dir.mkdir(parents=True, exist_ok=True)
+        envelope_path = self._persist_run_envelope(envelope, artifact_dir)
+        self.hooks.pre_reply(envelope.final_summary)
         self.hooks.post_run(envelope)
         self.memory.append_daily_log(
             "Marketplace watch run",
-            f"{final_summary}\n\nArtifacts:\n- {artifacts.dashboard_html.path}\n- {artifacts.markdown.path}",
+            f"{envelope.final_summary}\n\nArtifacts:\n- {monitor_artifacts.dashboard_html.path}\n- {monitor_artifacts.markdown.path}\n- Run envelope: {envelope_path}",
         )
         return envelope
+
+    def _execute_workers(
+        self,
+        *,
+        task_graph,
+        context: WorkerContext,
+        headless: bool,
+        attachments: list[TelegramAttachment] | None = None,
+        attachment_notes: list[str] | None = None,
+        attachment_limitations: list[str] | None = None,
+    ) -> list[WorkerResult]:
+        attachments = attachments or []
+        attachment_notes = attachment_notes or []
+        attachment_limitations = attachment_limitations or []
+        backend = select_backend(self.settings.background_backend if headless else self.settings.primary_reasoning_backend)
+        evidence = [f"attachment:{item.local_path or item.file_name or item.file_id}" for item in attachments]
+        evidence.extend(attachment_notes[:3])
+        evidence.extend(f"limitation:{item}" for item in attachment_limitations[:2])
+
+        worker_results: list[WorkerResult] = []
+        for task in task_graph.tasks:
+            response = backend.run(task, context)
+            output = response.output
+            if attachment_notes:
+                output = output + "\n\nИзвлечённые заметки по вложениям:\n" + "\n".join(f"- {item}" for item in attachment_notes)
+            if attachment_limitations:
+                output = output + "\n\nОграничения:\n" + "\n".join(f"- {item}" for item in attachment_limitations)
+            worker_results.append(
+                WorkerResult(
+                    task_id=task.id,
+                    role=task.role,
+                    status="completed",
+                    summary=response.summary,
+                    output=output,
+                    evidence=evidence,
+                    gaps=list(response.gaps or []),
+                    follow_up_actions=list(response.follow_up_actions or []),
+                )
+            )
+        return worker_results
+
+    def _persist_run_envelope(self, envelope: RunEnvelope, artifact_dir: Path) -> Path:
+        envelope_path = artifact_dir / "run_envelope.json"
+        envelope_path.write_text(json.dumps(envelope.to_dict(), ensure_ascii=False, indent=2), encoding="utf-8")
+        return envelope_path
 
     def _collect_attachment_notes(self, attachments: list[TelegramAttachment]) -> tuple[list[str], list[str]]:
         notes: list[str] = []
@@ -327,6 +374,6 @@ class AgentExecutor:
             )
         if attachments:
             return "Материалы получил и подготовил краткий результат. Если нужно, могу углубить разбор."
-        if short.endswith("?"):
+        if normalized.endswith("?"):
             return "Готово. Короткий ответ подготовил. Если хочешь, могу раскрыть тему подробнее."
         return "Готово. Запрос обработал. Если хочешь, следующим сообщением продолжу уже по сути задачи."

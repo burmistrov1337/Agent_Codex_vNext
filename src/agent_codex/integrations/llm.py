@@ -9,6 +9,8 @@ from ..contracts import Task, WorkerContext
 class BackendResponse:
     summary: str
     output: str
+    gaps: list[str] | None = None
+    follow_up_actions: list[str] | None = None
 
 
 class BackendAdapter:
@@ -30,7 +32,12 @@ class DeterministicBackendAdapter(BackendAdapter):
             f"Запрос: {context.request}\n"
             "Требование к синтезу: координатор обязан превратить результат в конкретный spec."
         )
-        return BackendResponse(summary=summary, output=output)
+        return BackendResponse(
+            summary=summary,
+            output=output,
+            gaps=["Structured synthesis is still shallow in deterministic mode."],
+            follow_up_actions=["Собрать coordinator-owned synthesis для этого worker output."],
+        )
 
 
 class NullBackendAdapter(BackendAdapter):

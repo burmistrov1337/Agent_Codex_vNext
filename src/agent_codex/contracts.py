@@ -90,6 +90,14 @@ class TelegramConversationSession:
 
 
 @dataclass(slots=True)
+class TaskLease:
+    worker_id: str
+    leased_at: str = field(default_factory=utc_now_iso)
+    lease_expires_at: str | None = None
+    attempt: int = 1
+
+
+@dataclass(slots=True)
 class TaskEnvelope:
     task_id: str
     source: str
@@ -102,8 +110,14 @@ class TaskEnvelope:
     attachments: list[TelegramAttachment] = field(default_factory=list)
     risky: bool = False
     confirmation_request: ConfirmationRequest | None = None
+    attempt_count: int = 0
+    max_attempts: int = 3
+    lease: TaskLease | None = None
+    run_id: str | None = None
+    result_envelope_path: str | None = None
     result_summary: str | None = None
     artifact_paths: list[str] = field(default_factory=list)
+    last_error: str | None = None
     error: str | None = None
     created_at: str = field(default_factory=utc_now_iso)
     updated_at: str = field(default_factory=utc_now_iso)
@@ -127,6 +141,8 @@ class WorkerResult:
     evidence: list[str] = field(default_factory=list)
     artifacts: list[Artifact] = field(default_factory=list)
     alerts: list[str] = field(default_factory=list)
+    gaps: list[str] = field(default_factory=list)
+    follow_up_actions: list[str] = field(default_factory=list)
     created_at: str = field(default_factory=utc_now_iso)
 
 
@@ -141,6 +157,25 @@ class HookEvent:
 
 
 @dataclass(slots=True)
+class SynthesisInput:
+    request: str
+    mode: str
+    task_graph: list[str]
+    worker_results: list[WorkerResult]
+    artifacts: list[Artifact]
+    alerts: list[str] = field(default_factory=list)
+
+
+@dataclass(slots=True)
+class SynthesisOutcome:
+    final_summary: str
+    user_message: str | None = None
+    facts: list[str] = field(default_factory=list)
+    limitations: list[str] = field(default_factory=list)
+    next_actions: list[str] = field(default_factory=list)
+
+
+@dataclass(slots=True)
 class RunEnvelope:
     run_id: str
     request: str
@@ -151,6 +186,7 @@ class RunEnvelope:
     final_summary: str
     alerts: list[str]
     user_message: str | None = None
+    synthesis: SynthesisOutcome | None = None
     created_at: str = field(default_factory=utc_now_iso)
 
     def to_dict(self) -> dict[str, Any]:

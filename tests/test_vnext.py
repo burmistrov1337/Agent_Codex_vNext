@@ -271,6 +271,12 @@ class VNextTests(unittest.TestCase):
             self.assertNotIn("Что сделал", telegram.sent_texts[-1]["text"])
             self.assertNotIn("Текущее состояние", telegram.sent_texts[-1]["text"])
             self.assertEqual(len(telegram.sent_files), 0)
+            task_files = list((settings.runtime_root / "tasks").glob("telegram_*.json"))
+            self.assertEqual(len(task_files), 1)
+            task_payload = json.loads(task_files[0].read_text(encoding="utf-8"))
+            self.assertEqual(task_payload["status"], "completed")
+            self.assertEqual(task_payload["attempt_count"], 1)
+            self.assertTrue(task_payload["result_envelope_path"])
 
     def test_telegram_bot_answers_greeting_like_human(self) -> None:
         with TemporaryDirectory() as tmp:

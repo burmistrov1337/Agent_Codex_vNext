@@ -22,6 +22,7 @@ from ..integrations.telegram import TelegramAdapter
 from ..integrations.telegram_raw import TelegramNotifyError
 from ..memory import MemoryStore
 from .executor import AgentExecutor
+from .task_bus import TaskBus
 
 
 class TelegramBotService:
@@ -41,6 +42,7 @@ class TelegramBotService:
         self.telegram_root = settings.runtime_root / "telegram"
         self.telegram_sessions_root = self.telegram_root / "sessions"
         self.state_path = settings.telegram_state_root / "bot_state.json"
+        self.task_bus = TaskBus(self.tasks_root)
 
     def run_polling(self, *, once: bool = False, max_cycles: int | None = None) -> dict:
         cycles = 0
@@ -97,8 +99,10 @@ class TelegramBotService:
 
     def process_queue(self) -> int:
         executed = 0
-        queued = self._list_tasks(statuses={"queued"})
-        for task in queued:
+        while True:
+            task = self.task_bus.claim_ready(worker_id="telegram-bot")
+            if task is None:
+                break
             executed += 1
             self._execute_task(task)
         return executed
@@ -201,7 +205,7 @@ class TelegramBotService:
             )
             session.pending_confirmation_id = task.confirmation_request.confirmation_id
             session.last_task_id = task.task_id
-            self._save_task(task)
+            self.task_bus.enqueue(task)
             self._save_session(session)
             self._send_checked_text(
                 envelope.chat_id,
@@ -212,7 +216,7 @@ class TelegramBotService:
             return
 
         session.last_task_id = task.task_id
-        self._save_task(task)
+        self.task_bus.enqueue(task)
         self._save_session(session)
         self._send_checked_text(
             envelope.chat_id,
@@ -223,10 +227,8 @@ class TelegramBotService:
 
     def _execute_task(self, task: TaskEnvelope) -> None:
         session = self._load_session(task.chat_id)
-        task.status = "running"
-        task.updated_at = utc_now_iso()
+        task = self.task_bus.mark_running(task, run_id=task.run_id)
         session.active_task_id = task.task_id
-        self._save_task(task)
         self._save_session(session)
 
         try:
@@ -243,20 +245,20 @@ class TelegramBotService:
                     headless=False,
                     mode="telegram",
                 )
-            task.status = "completed"
-            task.result_summary = envelope.final_summary
-            task.artifact_paths = [artifact.path for artifact in envelope.artifacts]
-            task.updated_at = utc_now_iso()
-            self._save_task(task)
+            run_artifact_path = next((artifact.path for artifact in envelope.artifacts if artifact.kind == "markdown" and "summary" in artifact.label.lower()), None) or str(self.tasks_root / f"{task.task_id}_result.json")
+            task = self.task_bus.complete(
+                task,
+                run_id=envelope.run_id,
+                result_envelope_path=run_artifact_path,
+                result_summary=envelope.final_summary,
+                artifact_paths=[artifact.path for artifact in envelope.artifacts],
+            )
             session.active_task_id = None
             session.last_task_id = task.task_id
             self._save_session(session)
             self._send_final_result(task, envelope)
         except Exception as exc:  # noqa: BLE001
-            task.status = "failed"
-            task.error = str(exc)
-            task.updated_at = utc_now_iso()
-            self._save_task(task)
+            task = self.task_bus.fail(task, error=str(exc))
             session.active_task_id = None
             session.last_task_id = task.task_id
             self._save_session(session)
@@ -503,52 +505,16 @@ class TelegramBotService:
         path.write_text(json.dumps(asdict(session), ensure_ascii=False, indent=2), encoding="utf-8")
 
     def _task_path(self, task_id: str) -> Path:
-        return self.tasks_root / f"telegram_{task_id}.json"
+        return self.task_bus.path_for(task_id)
 
     def _save_task(self, task: TaskEnvelope) -> None:
-        payload = asdict(task)
-        self._task_path(task.task_id).write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        self.task_bus.save(task)
 
     def _load_task(self, task_id: str) -> TaskEnvelope | None:
-        path = self._task_path(task_id)
-        if not path.exists():
-            return None
-        data = json.loads(path.read_text(encoding="utf-8"))
-        attachments = [TelegramAttachment(**item) for item in data.get("attachments", [])]
-        confirmation_payload = data.get("confirmation_request")
-        confirmation = ConfirmationRequest(**confirmation_payload) if confirmation_payload else None
-        return TaskEnvelope(
-            task_id=data["task_id"],
-            source=data["source"],
-            command=data["command"],
-            request=data["request"],
-            chat_id=data["chat_id"],
-            message_id=int(data["message_id"]),
-            session_id=data["session_id"],
-            status=data["status"],
-            attachments=attachments,
-            risky=bool(data.get("risky")),
-            confirmation_request=confirmation,
-            result_summary=data.get("result_summary"),
-            artifact_paths=list(data.get("artifact_paths") or []),
-            error=data.get("error"),
-            created_at=data["created_at"],
-            updated_at=data["updated_at"],
-        )
+        return self.task_bus.load(task_id)
 
     def _list_tasks(self, *, chat_id: str | None = None, statuses: set[str] | None = None) -> list[TaskEnvelope]:
-        tasks: list[TaskEnvelope] = []
-        for path in sorted(self.tasks_root.glob("telegram_*.json")):
-            task = self._load_task(path.stem.replace("telegram_", "", 1))
-            if task is None:
-                continue
-            if chat_id is not None and task.chat_id != chat_id:
-                continue
-            if statuses is not None and task.status not in statuses:
-                continue
-            tasks.append(task)
-        tasks.sort(key=lambda item: item.created_at)
-        return tasks
+        return self.task_bus.list_tasks(chat_id=chat_id, statuses=statuses)
 
     def _find_existing_task_for_message(self, chat_id: str, message_id: int) -> TaskEnvelope | None:
         for task in self._list_tasks(chat_id=chat_id):
@@ -570,18 +536,14 @@ class TelegramBotService:
         if session.pending_confirmation_id:
             task = self._find_task_by_confirmation(session.pending_confirmation_id)
             if task:
-                task.status = "cancelled"
-                task.updated_at = utc_now_iso()
-                self._save_task(task)
+                self.task_bus.cancel(task)
                 session.pending_confirmation_id = None
                 self._save_session(session)
                 return f"Отменил задачу {task.task_id} до запуска."
         queued = [item for item in self._list_tasks(chat_id=session.chat_id, statuses={"queued"})]
         if queued:
             task = queued[-1]
-            task.status = "cancelled"
-            task.updated_at = utc_now_iso()
-            self._save_task(task)
+            self.task_bus.cancel(task)
             return f"Отменил задачу {task.task_id} из очереди."
         if session.active_task_id:
             return (
@@ -601,9 +563,7 @@ class TelegramBotService:
         if task.confirmation_request:
             task.confirmation_request.status = "confirmed"
             task.confirmation_request.updated_at = utc_now_iso()
-        task.status = "queued"
-        task.updated_at = utc_now_iso()
-        self._save_task(task)
+        self.task_bus.confirm(task)
         session.pending_confirmation_id = None
         self._save_session(session)
         return f"Подтверждение принято. Задача {task.task_id} поставлена в очередь."
@@ -619,9 +579,7 @@ class TelegramBotService:
         if task.confirmation_request:
             task.confirmation_request.status = "rejected"
             task.confirmation_request.updated_at = utc_now_iso()
-        task.status = "cancelled"
-        task.updated_at = utc_now_iso()
-        self._save_task(task)
+        self.task_bus.reject(task)
         session.pending_confirmation_id = None
         self._save_session(session)
         return f"Задача {task.task_id} отменена по отклонённому подтверждению."
