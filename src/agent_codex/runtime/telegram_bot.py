@@ -23,6 +23,7 @@ from ..integrations.telegram_raw import TelegramNotifyError
 from ..memory import MemoryStore
 from .executor import AgentExecutor
 from .task_bus import TaskBus
+from .task_maintenance import TaskBusMaintainer, TaskHeartbeat
 
 
 class TelegramBotService:
@@ -43,6 +44,7 @@ class TelegramBotService:
         self.telegram_sessions_root = self.telegram_root / "sessions"
         self.state_path = settings.telegram_state_root / "bot_state.json"
         self.task_bus = TaskBus(self.tasks_root)
+        self.maintainer = TaskBusMaintainer(self.task_bus)
 
     def run_polling(self, *, once: bool = False, max_cycles: int | None = None) -> dict:
         cycles = 0
@@ -52,6 +54,7 @@ class TelegramBotService:
         while True:
             try:
                 processed_updates += self.poll_once()
+                self.maintainer.sweep_once()
                 executed_tasks += self.process_queue()
                 last_error = None
             except TelegramNotifyError as exc:
@@ -232,19 +235,21 @@ class TelegramBotService:
         self._save_session(session)
 
         try:
-            if task.command == "marketplace-watch":
-                envelope = self.executor.run_marketplace_watch(
-                    top_limit=25,
-                    sample_data=not bool(self.settings.wb_api_token),
-                    headless=True,
-                )
-            else:
-                envelope = self.executor.run_request(
-                    task.request,
-                    attachments=task.attachments,
-                    headless=False,
-                    mode="telegram",
-                )
+            with TaskHeartbeat(self.task_bus, task, worker_id="telegram-bot", interval_seconds=15, lease_ttl_seconds=90) as heartbeat:
+                if task.command == "marketplace-watch":
+                    envelope = self.executor.run_marketplace_watch(
+                        top_limit=25,
+                        sample_data=not bool(self.settings.wb_api_token),
+                        headless=True,
+                    )
+                else:
+                    envelope = self.executor.run_request(
+                        task.request,
+                        attachments=task.attachments,
+                        headless=False,
+                        mode="telegram",
+                    )
+                task = heartbeat.task
             run_artifact_path = next((artifact.path for artifact in envelope.artifacts if artifact.kind == "markdown" and "summary" in artifact.label.lower()), None) or str(self.tasks_root / f"{task.task_id}_result.json")
             task = self.task_bus.complete(
                 task,

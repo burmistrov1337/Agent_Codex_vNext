@@ -11,7 +11,7 @@ from unittest.mock import patch
 
 from agent_codex.apps.cli.main import main
 from agent_codex.config import ensure_runtime_layout, load_settings
-from agent_codex.contracts import SynthesisOutcome, WorkerResult
+from agent_codex.contracts import SynthesisOutcome, TaskEnvelope, WorkerResult
 from agent_codex.domains.marketplace.artifacts import (
     render_watch_dashboard_html,
     render_watch_summary_markdown,
@@ -20,7 +20,7 @@ from agent_codex.hooks import HookPipeline
 from agent_codex.hooks.policy import evaluate_tool_action
 from agent_codex.integrations.telegram_raw import TelegramNotifyError
 from agent_codex.memory import ConsolidationEngine, MemoryStore
-from agent_codex.runtime import AgentExecutor, Coordinator, TelegramBotService
+from agent_codex.runtime import AgentExecutor, Coordinator, TaskBus, TelegramBotService
 
 
 class FakeTelegramAdapter:
@@ -241,6 +241,31 @@ class VNextTests(unittest.TestCase):
             payload = json.loads(buffer.getvalue())
             self.assertTrue(payload["final_summary"])
             self.assertTrue(payload["artifacts"])
+
+    def test_task_maintain_cli_once_json(self) -> None:
+        with TemporaryDirectory() as tmp:
+            settings = load_settings(tmp)
+            ensure_runtime_layout(settings)
+            bus = TaskBus(settings.runtime_root / "tasks")
+            bus.enqueue(
+                TaskEnvelope(
+                    task_id="queued-1",
+                    source="telegram",
+                    command="ask",
+                    request="ready",
+                    chat_id="1",
+                    message_id=1,
+                    session_id="s",
+                    status="queued",
+                )
+            )
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                rc = main(["task-maintain", "--project-root", tmp, "--once", "--json"])
+            self.assertEqual(rc, 0)
+            payload = json.loads(buffer.getvalue())
+            self.assertEqual(payload["cycles"], 1)
+            self.assertEqual(payload["last_sweep"]["ready_queued"], 1)
 
     def test_dashboard_and_summary_render(self) -> None:
         with TemporaryDirectory() as tmp:

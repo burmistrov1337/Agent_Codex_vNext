@@ -9,7 +9,7 @@ from ...hooks import HookPipeline
 from ...integrations.n8n import build_n8n_payload
 from ...integrations.telegram import TelegramAdapter
 from ...memory import MemoryStore
-from ...runtime import AgentExecutor, Coordinator, TelegramBotService
+from ...runtime import AgentExecutor, Coordinator, TaskBus, TaskBusMaintainer, TelegramBotService
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -41,6 +41,8 @@ def main(argv: list[str] | None = None) -> int:
     executor = AgentExecutor(settings=settings, coordinator=coordinator, hooks=hooks, memory=memory)
     telegram = TelegramAdapter(settings)
     telegram_bot = TelegramBotService(settings=settings, executor=executor, telegram=telegram, memory=memory)
+    task_bus = TaskBus(settings.runtime_root / "tasks")
+    maintainer = TaskBusMaintainer(task_bus)
 
     if args.command == "doctor":
         payload = executor.doctor_report()
@@ -54,6 +56,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "tasks":
         payload = executor.tasks_report()
         return _emit(payload, as_json=args.json)
+    if args.command == "task-maintain":
+        payload = maintainer.run(once=args.once or args.max_cycles is None, max_cycles=args.max_cycles)
+        return _emit(payload, as_json=True if args.json or args.once else False)
     if args.command == "hooks":
         payload = executor.hooks_report(tool_name=args.tool, path=args.path)
         return _emit(payload, as_json=args.json)

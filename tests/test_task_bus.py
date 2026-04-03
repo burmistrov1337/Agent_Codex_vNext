@@ -9,6 +9,7 @@ from tempfile import TemporaryDirectory
 from agent_codex.config import ensure_runtime_layout, load_settings
 from agent_codex.contracts import TaskEnvelope
 from agent_codex.runtime.task_bus import TaskBus
+from agent_codex.runtime.task_maintenance import TaskBusMaintainer
 
 
 class TaskBusTests(unittest.TestCase):
@@ -169,6 +170,70 @@ class TaskBusTests(unittest.TestCase):
             stored = bus.load("case-3")
             assert stored is not None
             self.assertEqual(stored.status, "failed")
+
+    def test_maintainer_reclaims_expired_task_back_to_queue(self) -> None:
+        with TemporaryDirectory() as tmp:
+            settings = load_settings(tmp)
+            ensure_runtime_layout(settings)
+            bus = TaskBus(settings.runtime_root / "tasks")
+            task = TaskEnvelope(
+                task_id="case-4",
+                source="telegram",
+                command="ask",
+                request="expired lease",
+                chat_id="413513309",
+                message_id=14,
+                session_id="telegram-413513309",
+                status="running",
+                attempt_count=1,
+                max_attempts=3,
+            )
+            task.lease = bus._build_lease(
+                worker_id="telegram-bot",
+                now=datetime.now(timezone.utc) - timedelta(seconds=300),
+                ttl_seconds=1,
+                attempt=1,
+            )
+            bus.enqueue(task)
+            report = TaskBusMaintainer(bus, reclaim_delay_seconds=0).sweep_once()
+            stored = bus.load("case-4")
+            assert stored is not None
+            self.assertEqual(report.reclaimed_to_queue, 1)
+            self.assertEqual(stored.status, "queued")
+            self.assertIsNotNone(stored.retry_not_before)
+
+    def test_maintainer_counts_ready_and_awaiting_tasks(self) -> None:
+        with TemporaryDirectory() as tmp:
+            settings = load_settings(tmp)
+            ensure_runtime_layout(settings)
+            bus = TaskBus(settings.runtime_root / "tasks")
+            bus.enqueue(
+                TaskEnvelope(
+                    task_id="queued",
+                    source="telegram",
+                    command="ask",
+                    request="ready",
+                    chat_id="1",
+                    message_id=1,
+                    session_id="s",
+                    status="queued",
+                )
+            )
+            bus.enqueue(
+                TaskEnvelope(
+                    task_id="confirm",
+                    source="telegram",
+                    command="ask",
+                    request="confirm",
+                    chat_id="1",
+                    message_id=2,
+                    session_id="s",
+                    status="awaiting_confirmation",
+                )
+            )
+            report = TaskBusMaintainer(bus).sweep_once()
+            self.assertEqual(report.ready_queued, 1)
+            self.assertEqual(report.awaiting_confirmation, 1)
 
 
 if __name__ == "__main__":

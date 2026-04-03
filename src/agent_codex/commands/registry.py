@@ -14,6 +14,7 @@ COMMANDS = [
     CommandSpec("memory", "Показать индекс памяти и при необходимости запустить consolidation."),
     CommandSpec("review", "Проверить текст на violations synthesis rules."),
     CommandSpec("tasks", "Показать текущие runtime task files."),
+    CommandSpec("task-maintain", "Прогнать recovery/maintenance цикл для TaskBus."),
     CommandSpec("hooks", "Проверить, как policy оценит действие или путь."),
     CommandSpec("compact", "Сжать длинный текст до короткой управленческой сводки."),
     CommandSpec("marketplace-watch", "Построить marketplace watch и headless envelope."),
