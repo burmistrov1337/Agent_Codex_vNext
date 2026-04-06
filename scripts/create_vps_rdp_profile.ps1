@@ -3,8 +3,8 @@ param(
     [string]$User = "agentcodex"
 )
 
-$desktop = [Environment]::GetFolderPath("Desktop")
-$rdpPath = Join-Path $desktop "Agent_Codex Server.rdp"
+$scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$rdpPath = Join-Path $scriptRoot "Agent_Codex Server.rdp"
 
 $content = @"
 screen mode id:i:2
