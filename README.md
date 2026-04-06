@@ -1,24 +1,24 @@
 # Agent_Codex vNext
 
-Clean-room repo for the next generation of `Agent_Codex`.
+Новый clean-room репозиторий для следующего поколения `Agent_Codex`.
 
-## Goals
+## Цели
 
-- one server-ready agent system for work and study;
-- explicit runtime contracts and hooks;
-- durable memory and session logs;
-- first-class marketplace vertical;
-- stable headless runs for `n8n` and Telegram.
+- одна server-ready агентная система для работы и учёбы;
+- явные runtime-контракты и hooks;
+- устойчивая память и журналы сессий;
+- полноценная marketplace-вертикаль как первый домен;
+- стабильные headless-запуски для `n8n` и Telegram.
 
-## What Already Works
+## Что уже работает
 
-- Telegram ingress in `vNext` via long polling;
-- headless CLI runs for `doctor`, `marketplace-watch`, and future scheduled jobs;
-- runtime memory and session storage in `.agent_codex/`;
-- marketplace artifact generation, including HTML dashboards;
-- Docker Compose layout for an always-on bot plus local-only `n8n`.
+- Telegram-ingress в `vNext` через long polling;
+- headless CLI-команды для `doctor`, `marketplace-watch` и будущих scheduled-сценариев;
+- runtime-память и хранилище сессий в `.agent_codex/`;
+- генерация marketplace-артефактов, включая HTML-дашборды;
+- Docker Compose-контур для always-on бота и локального `n8n`.
 
-## Local Quickstart
+## Быстрый локальный старт
 
 ```powershell
 cd D:\Agent_Codex_vNext
@@ -28,19 +28,19 @@ python -m agent_codex.apps.cli.main marketplace-watch --sample-data --headless
 python -m agent_codex.apps.cli.main telegram-bot --once --json
 ```
 
-## Telegram Bot MVP
+## Telegram-бот MVP
 
-The first Telegram ingress lives in `vNext`, not in the legacy repo.
+Первый Telegram-ingress живёт в `vNext`, а не в старом репозитории.
 
-Current shape:
+Текущая форма:
 
 - long polling;
-- single-user access via `TELEGRAM_ALLOWED_CHAT_ID`;
-- async task queue with `ack`, `confirm`, and final result;
-- text, documents, and photos;
-- risky requests require `/confirm`.
+- single-user доступ через `TELEGRAM_ALLOWED_CHAT_ID`;
+- асинхронная очередь задач с `ack`, `confirm` и финальным ответом;
+- текст, документы и фотографии;
+- рискованные действия требуют `/confirm`.
 
-Required env:
+Нужные переменные окружения:
 
 ```env
 TELEGRAM_BOT_TOKEN=
@@ -49,14 +49,14 @@ TELEGRAM_ALLOWED_CHAT_ID=
 TELEGRAM_POLL_TIMEOUT_SECONDS=20
 ```
 
-Useful commands:
+Полезные команды:
 
 ```powershell
 python -m agent_codex.apps.cli.main telegram-bot
 python -m agent_codex.apps.cli.main telegram-bot --once --json
 ```
 
-Windows helpers:
+Помощники для Windows:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\start_telegram_bot.ps1
@@ -66,46 +66,46 @@ powershell -ExecutionPolicy Bypass -File .\scripts\stop_telegram_bot.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\install_telegram_bot_autostart.ps1
 ```
 
-Important:
+Важно:
 
-- only one long-polling instance should run at a time;
-- if the local Windows bot is active, do not start the VPS bot with the same token until the local one is stopped.
+- одновременно должен работать только один long-polling инстанс;
+- если локальный Windows-бот уже активен, не запускай VPS-бота с тем же токеном, пока локальный процесс не остановлен.
 
-## Server Layout
+## Серверная схема
 
-Target server:
+Целевой сервер:
 
 - Ubuntu 22.04.5 LTS;
 - Docker Compose;
-- one always-on `agent_codex_bot` container;
-- one sidecar `n8n` container;
-- persistent runtime data in `.agent_codex/`;
-- persistent `n8n` data in `.docker/n8n/`.
+- один always-on контейнер `agent_codex_bot`;
+- один sidecar-контейнер `n8n`;
+- постоянные runtime-данные в `.agent_codex/`;
+- постоянные данные `n8n` в `.docker/n8n/`.
 
-By default:
+По умолчанию:
 
-- `n8n` binds to `127.0.0.1:5678`;
-- Telegram is the primary live ingress;
-- `doctor --json` is the healthcheck and smoke-test baseline.
+- `n8n` слушает `127.0.0.1:5678`;
+- Telegram является основным live-ingress;
+- `doctor --json` используется как healthcheck и базовый smoke-test.
 
-## First Server Bootstrap
+## Первый bootstrap сервера
 
-On the Ubuntu host:
+На Ubuntu-хосте:
 
 ```bash
 sudo bash deploy/bootstrap_server.sh
 ```
 
-This prepares:
+Скрипт подготавливает:
 
-- baseline packages;
+- базовые пакеты;
 - timezone;
 - `ufw`;
 - `fail2ban`;
-- Docker and Docker Compose;
-- app directories under `/opt/agent_codex_vnext` and `/var/lib`.
+- Docker и Docker Compose;
+- каталоги приложения в `/opt/agent_codex_vnext` и `/var/lib`.
 
-## First Deploy On Server
+## Первый deploy на сервер
 
 ```bash
 cd /opt/agent_codex_vnext
@@ -114,7 +114,7 @@ vim .env
 bash deploy/deploy_stack.sh
 ```
 
-Useful ops:
+Полезные операции:
 
 ```bash
 bash deploy/stack_status.sh
@@ -124,8 +124,8 @@ bash deploy/smoke_check.sh
 bash deploy/backup_runtime.sh
 ```
 
-## Docs Map
+## Карта документации
 
-- `docs/server_readiness.md` - deploy and operations runbook;
-- `docs/migration_matrix.md` - what we reuse, redesign, or discard;
-- `docs/claude_gap_target_spec.md` - explicit audit of `vNext` against Claude-style architecture patterns.
+- `docs/server_readiness.md` — runbook по deploy и эксплуатации;
+- `docs/migration_matrix.md` — что мы переиспользуем, перепроектируем или отбрасываем;
+- `docs/claude_gap_target_spec.md` — явный аудит `vNext` относительно Claude-подобных архитектурных паттернов.
