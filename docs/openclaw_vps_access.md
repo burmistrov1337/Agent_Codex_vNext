@@ -36,6 +36,12 @@ powershell -ExecutionPolicy Bypass -File D:\Agent_Codex_vNext\scripts\open_openc
 
 1. Зайти в Control UI.
 2. При необходимости вставить gateway token.
+   Быстро получить его можно так:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File D:\Agent_Codex_vNext\scripts\show_openclaw_gateway_token.ps1
+```
+
 3. Проверить, что gateway жив.
 4. Проверить, что Telegram-канал включен.
 
