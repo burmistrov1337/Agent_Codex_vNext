@@ -11,7 +11,10 @@ requires-python = ">=3.12"
 authors = [
   { name = "Dasha + Codex" }
 ]
-dependencies = []
+dependencies = [
+  "google-auth>=2.38.0",
+  "requests>=2.32.0",
+]
 
 [project.scripts]
 agent-codex = "agent_codex.apps.cli.main:main"

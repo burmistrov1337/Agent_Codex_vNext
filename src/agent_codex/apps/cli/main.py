@@ -22,6 +22,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--headless", action="store_true")
     parser.add_argument("--notify-telegram", action="store_true")
     parser.add_argument("--top-limit", type=int, default=25)
+    parser.add_argument("--scope", choices=["all", "wb", "site"], default="all")
     parser.add_argument("--path")
     parser.add_argument("--tool", default="shell")
     parser.add_argument("--run-consolidation", action="store_true")
@@ -88,6 +89,15 @@ def main(argv: list[str] | None = None) -> int:
             },
             as_json=False,
         )
+    if args.command == "sales-sheet-init":
+        payload = executor.sales_sheet_init_report()
+        return _emit(payload, as_json=True if args.json else False)
+    if args.command == "sales-sheet-refresh":
+        payload = executor.sales_sheet_refresh_report(scope=args.scope)
+        return _emit(payload, as_json=True if args.json else False)
+    if args.command == "sales-sheet-diagnose":
+        payload = executor.sales_sheet_diagnose_report()
+        return _emit(payload, as_json=True if args.json else False)
     if args.command == "telegram-bot":
         payload = telegram_bot.run_polling(once=args.once, max_cycles=args.max_cycles)
         return _emit(payload, as_json=True if args.json or args.once else False)

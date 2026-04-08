@@ -10,6 +10,11 @@ env/
 dist/
 .docker/*
 !.docker/.gitkeep
+.secrets/
+.vscode/
+.playwright-cli/
+*.rdp
+scripts/Agent_Codex Server.rdp
 
 .agent_codex/sessions/*
 !.agent_codex/sessions/.gitkeep

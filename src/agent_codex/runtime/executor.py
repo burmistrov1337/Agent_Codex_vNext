@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import importlib
 import json
 import re
 from dataclasses import asdict
 from pathlib import Path
+from typing import Any
 from uuid import uuid4
 
 from ..commands import COMMANDS
@@ -42,11 +44,21 @@ class AgentExecutor:
         self.synthesizer = Synthesizer()
 
     def doctor_report(self) -> dict:
+        sales_state = self._sales_surface_state()
         return {
             "project_root": str(self.settings.project_root),
             "runtime_root": str(self.settings.runtime_root),
             "telegram_configured": bool(self.settings.telegram_bot_token and self.settings.telegram_chat_id),
             "wb_configured": bool(self.settings.wb_api_token),
+            "sales_artifact_root": str(self.settings.sales_artifact_root),
+            "sales_sheet_configured": bool(self.settings.google_sheets_spreadsheet_id),
+            "google_service_account_configured": bool(
+                self.settings.google_service_account_file or self.settings.google_service_account_json
+            ),
+            "advantshop_configured": bool(self.settings.advantshop_api_url and (self.settings.advantshop_api or self.settings.advantshop_api_auth)),
+            "sales_sheet_refresh_cron": self.settings.sales_sheet_refresh_cron,
+            "sales_sheet_surface": sales_state["state"],
+            "sales_sheet_surface_message": sales_state["message"],
             "skills": ", ".join(list_bundled_skills(self.settings.project_root)),
             "commands": ", ".join(item.name for item in COMMANDS),
             "backends": (
@@ -104,6 +116,91 @@ class AgentExecutor:
         digest_path = artifact_dir / f"{file_path.stem}_digest.md"
         digest_path.write_text("# Study Digest\n\n" + "\n\n".join(f"- {item}" for item in digest), encoding="utf-8")
         return {"digest_path": str(digest_path), "points": len(digest)}
+
+    def sales_sheet_init_report(self) -> dict[str, Any]:
+        return self._sales_command_report("init")
+
+    def sales_sheet_refresh_report(self, *, scope: str = "all") -> dict[str, Any]:
+        if scope not in {"all", "wb", "site"}:
+            return {
+                "status": "error",
+                "command": "sales-sheet-refresh",
+                "scope": scope,
+                "message": "scope must be one of: all, wb, site",
+            }
+        return self._sales_command_report("refresh", scope=scope)
+
+    def sales_sheet_diagnose_report(self) -> dict[str, Any]:
+        return self._sales_command_report("diagnose")
+
+    def _sales_command_report(self, action: str, *, scope: str | None = None) -> dict[str, Any]:
+        state = self._sales_surface_state()
+        payload: dict[str, Any] = {
+            "command": f"sales-sheet-{action}",
+            "status": state["state"],
+            "message": state["message"],
+            "sales_artifact_root": str(self.settings.sales_artifact_root),
+            "google_sheets_spreadsheet_id": self.settings.google_sheets_spreadsheet_id,
+            "google_service_account_configured": bool(
+                self.settings.google_service_account_file or self.settings.google_service_account_json
+            ),
+            "advantshop_configured": bool(
+                self.settings.advantshop_api_url and (self.settings.advantshop_api or self.settings.advantshop_api_auth)
+            ),
+            "sales_sheet_refresh_cron": self.settings.sales_sheet_refresh_cron,
+            "sales_surface_available": state["available"],
+        }
+        if scope is not None:
+            payload["scope"] = scope
+        if state["available"]:
+            try:
+                service = self._build_sales_service()
+                runner = {
+                    "init": service.init_workbook,
+                    "refresh": lambda: service.refresh(scope=scope or "all"),
+                    "diagnose": service.diagnose,
+                }[action]
+                result = runner()
+                payload.update(result if isinstance(result, dict) else {"result": result})
+                payload["status"] = payload.get("status", "ok")
+                return payload
+            except Exception as exc:
+                payload["status"] = "error"
+                payload["message"] = str(exc)
+                payload["error"] = exc.__class__.__name__
+                return payload
+        payload["next_step"] = (
+            "Add the sales domain service layer under src/agent_codex/domains/sales/service.py."
+        )
+        return payload
+
+    def _sales_surface_state(self) -> dict[str, Any]:
+        try:
+            importlib.import_module("agent_codex.domains.sales.service")
+        except ModuleNotFoundError:
+            return {
+                "available": False,
+                "state": "warning",
+                "message": "sales domain service is not available yet",
+            }
+        except Exception as exc:
+            return {
+                "available": False,
+                "state": "error",
+                "message": f"sales domain import failed: {exc}",
+            }
+        return {
+            "available": True,
+            "state": "ok",
+            "message": "sales domain service is available",
+        }
+
+    def _build_sales_service(self):
+        module = importlib.import_module("agent_codex.domains.sales.service")
+        service_cls = getattr(module, "SalesSheetService", None)
+        if service_cls is None:
+            raise RuntimeError("SalesSheetService is not defined in agent_codex.domains.sales.service")
+        return service_cls(self.settings)
 
     def run_request(
         self,

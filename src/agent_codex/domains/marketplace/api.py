@@ -200,6 +200,34 @@ class WildberriesApiClient:
             {"nmList": nm_ids},
         )
 
+    def get_tariffs_commission(self, *, locale: str = "ru") -> Any:
+        url = self._append_query(
+            "https://common-api.wildberries.ru/api/v1/tariffs/commission",
+            {"locale": locale},
+        )
+        return self.get(url)
+
+    def get_tariffs_box(self, *, date: str) -> Any:
+        url = self._append_query(
+            "https://common-api.wildberries.ru/api/v1/tariffs/box",
+            {"date": date},
+        )
+        return self.get(url)
+
+    def get_tariffs_pallet(self, *, date: str) -> Any:
+        url = self._append_query(
+            "https://common-api.wildberries.ru/api/v1/tariffs/pallet",
+            {"date": date},
+        )
+        return self.get(url)
+
+    def get_tariffs_return(self, *, date: str) -> Any:
+        url = self._append_query(
+            "https://common-api.wildberries.ru/api/v1/tariffs/return",
+            {"date": date},
+        )
+        return self.get(url)
+
     def get_promotion_campaign_counts(self) -> Any:
         return self.get("https://advert-api.wildberries.ru/adv/v1/promotion/count")
 
