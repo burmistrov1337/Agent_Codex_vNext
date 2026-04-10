@@ -8,9 +8,10 @@ from typing import Any
 from urllib import error, parse, request
 
 from ..config import Settings
+from ..errors import ApiError, ConfigError
 
 
-class GoogleSheetsError(RuntimeError):
+class GoogleSheetsError(ApiError):
     pass
 
 
@@ -188,7 +189,7 @@ class GoogleSheetsClient:
 
 def build_google_sheets_client(settings: Settings) -> GoogleSheetsClient:
     if not settings.google_sheets_spreadsheet_id:
-        raise RuntimeError("GOOGLE_SHEETS_SPREADSHEET_ID is not configured.")
+        raise ConfigError("GOOGLE_SHEETS_SPREADSHEET_ID is not configured.")
     return GoogleSheetsClient(
         spreadsheet_id=settings.google_sheets_spreadsheet_id,
         service_account_file=settings.google_service_account_file,

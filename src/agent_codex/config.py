@@ -33,6 +33,51 @@ class Settings:
     advantshop_api: str | None
     advantshop_api_auth: str | None
 
+    def validate(self) -> list[str]:
+        issues: list[str] = []
+        supported_backends = {"deterministic", "null", "groq"}
+
+        for field_name, backend_name in (
+            ("primary_reasoning_backend", self.primary_reasoning_backend),
+            ("background_backend", self.background_backend),
+            ("cheap_backend", self.cheap_backend),
+        ):
+            if backend_name not in supported_backends:
+                issues.append(
+                    f"{field_name} uses unsupported backend '{backend_name}'. "
+                    f"Supported values: {', '.join(sorted(supported_backends))}."
+                )
+            if backend_name == "groq" and not self.groq_api_key:
+                issues.append(f"{field_name} is set to 'groq', but GROQ_API_KEY is not configured.")
+
+        if self.telegram_bot_token and not self.telegram_allowed_chat_id:
+            issues.append("TELEGRAM_ALLOWED_CHAT_ID or TELEGRAM_CHAT_ID must be configured when TELEGRAM_BOT_TOKEN is set.")
+
+        has_google_credentials = bool(self.google_service_account_file or self.google_service_account_json)
+        if self.google_sheets_spreadsheet_id and not has_google_credentials:
+            issues.append(
+                "Google Sheets is configured, but GOOGLE_SERVICE_ACCOUNT_FILE or GOOGLE_SERVICE_ACCOUNT_JSON is missing."
+            )
+        if has_google_credentials and not self.google_sheets_spreadsheet_id:
+            issues.append(
+                "Google service account credentials are configured, but GOOGLE_SHEETS_SPREADSHEET_ID is missing."
+            )
+        if self.google_service_account_file and not self.google_service_account_file.exists():
+            issues.append(
+                f"GOOGLE_SERVICE_ACCOUNT_FILE points to a missing file: {self.google_service_account_file}."
+            )
+
+        has_advantshop_credentials = bool(self.advantshop_api or self.advantshop_api_auth)
+        if self.advantshop_api_url and not has_advantshop_credentials:
+            issues.append("ADVANTSHOP_API_URL is configured, but ADVANTSHOP_API or ADVANTSHOP_API_AUTH is missing.")
+        if has_advantshop_credentials and not self.advantshop_api_url:
+            issues.append("ADVANTSHOP_API or ADVANTSHOP_API_AUTH is configured, but ADVANTSHOP_API_URL is missing.")
+
+        if self.wb_api_timeout_seconds <= 0:
+            issues.append("WB_API_TIMEOUT_SECONDS must be greater than zero.")
+
+        return issues
+
 
 def load_settings(project_root: str | Path = ".") -> Settings:
     root = Path(project_root).resolve()

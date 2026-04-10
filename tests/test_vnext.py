@@ -223,6 +223,25 @@ class VNextTests(unittest.TestCase):
             self.assertEqual(rc, 0)
             payload = json.loads(buffer.getvalue())
             self.assertIn("runtime_root", payload)
+            self.assertIn("config_issues", payload)
+            self.assertIsInstance(payload["config_issues"], list)
+
+    def test_settings_validate_reports_inconsistent_google_and_groq_config(self) -> None:
+        with TemporaryDirectory() as tmp:
+            env_path = Path(tmp) / ".env"
+            env_path.write_text(
+                "\n".join(
+                    [
+                        "PRIMARY_REASONING_BACKEND=groq",
+                        "GOOGLE_SHEETS_SPREADSHEET_ID=sheet-123",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            settings = load_settings(tmp)
+            issues = settings.validate()
+            self.assertTrue(any("GROQ_API_KEY" in issue for issue in issues))
+            self.assertTrue(any("Google Sheets is configured" in issue for issue in issues))
 
     def test_marketplace_watch_headless_json(self) -> None:
         with TemporaryDirectory() as tmp:

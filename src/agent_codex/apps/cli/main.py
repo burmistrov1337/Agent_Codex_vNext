@@ -2,14 +2,19 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 
 from ...commands import COMMANDS
 from ...config import ensure_runtime_layout, load_settings
 from ...hooks import HookPipeline
 from ...integrations.n8n import build_n8n_payload
 from ...integrations.telegram import TelegramAdapter
+from ...logging_config import setup_logging
 from ...memory import MemoryStore
 from ...runtime import AgentExecutor, Coordinator, TaskBus, TaskBusMaintainer, TelegramBotService
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -36,6 +41,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     settings = load_settings(args.project_root)
     ensure_runtime_layout(settings)
+    setup_logging(log_file=settings.runtime_root / "agent.log")
+    LOGGER.debug("CLI initialized", extra={"run_id": None})
     memory = MemoryStore(settings)
     hooks = HookPipeline(settings)
     coordinator = Coordinator()

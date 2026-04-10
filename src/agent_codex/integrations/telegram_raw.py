@@ -9,8 +9,10 @@ import uuid
 from dataclasses import dataclass
 from pathlib import Path
 
+from ..errors import ApiError
 
-class TelegramNotifyError(RuntimeError):
+
+class TelegramNotifyError(ApiError):
     pass
 
 

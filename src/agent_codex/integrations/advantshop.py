@@ -6,9 +6,10 @@ from typing import Any
 from urllib import error, parse, request
 
 from ..config import Settings
+from ..errors import ApiError, ConfigError
 
 
-class AdvantShopApiError(RuntimeError):
+class AdvantShopApiError(ApiError):
     pass
 
 
@@ -90,10 +91,10 @@ class AdvantShopClient:
 
 def build_advantshop_client(settings: Settings) -> AdvantShopClient:
     if not settings.advantshop_api_url:
-        raise RuntimeError("ADVANTSHOP_API_URL is not configured.")
+        raise ConfigError("ADVANTSHOP_API_URL is not configured.")
     api_key = settings.advantshop_api or settings.advantshop_api_auth
     if not api_key:
-        raise RuntimeError("ADVANTSHOP_API or ADVANTSHOP_API_AUTH is not configured.")
+        raise ConfigError("ADVANTSHOP_API or ADVANTSHOP_API_AUTH is not configured.")
     return AdvantShopClient(
         base_url=settings.advantshop_api_url,
         api_key=api_key,

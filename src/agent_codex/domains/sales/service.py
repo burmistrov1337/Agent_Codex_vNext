@@ -8,6 +8,7 @@ from typing import Any, Iterable
 
 from ...config import Settings
 from ...contracts import utc_now_iso
+from ...errors import ConfigError
 from ...integrations.advantshop import build_advantshop_client
 from ...integrations.google_sheets import build_google_sheets_client
 from ...integrations.wildberries import build_wildberries_client
@@ -37,7 +38,7 @@ from .schema import (
 )
 
 
-class SalesSheetConfigurationError(RuntimeError):
+class SalesSheetConfigurationError(ConfigError):
     pass
 
 

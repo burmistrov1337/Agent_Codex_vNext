@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ..config import Settings
+from ..errors import ConfigError
 
 if TYPE_CHECKING:
     from ..domains.marketplace.api import WildberriesApiClient
@@ -10,7 +11,7 @@ if TYPE_CHECKING:
 
 def build_wildberries_client(settings: Settings) -> WildberriesApiClient:
     if not settings.wb_api_token:
-        raise RuntimeError("WB_API_TOKEN is not configured.")
+        raise ConfigError("WB_API_TOKEN is not configured.")
     from ..domains.marketplace.api import WildberriesApiClient
 
     return WildberriesApiClient(

@@ -6,8 +6,10 @@ from typing import Any
 from urllib import error, request
 from urllib.parse import urlencode
 
+from ...errors import ApiError
 
-class WildberriesApiError(RuntimeError):
+
+class WildberriesApiError(ApiError):
     pass
 
 

@@ -48,6 +48,7 @@ class AgentExecutor:
         return {
             "project_root": str(self.settings.project_root),
             "runtime_root": str(self.settings.runtime_root),
+            "config_issues": self.settings.validate(),
             "telegram_configured": bool(self.settings.telegram_bot_token and self.settings.telegram_chat_id),
             "wb_configured": bool(self.settings.wb_api_token),
             "sales_artifact_root": str(self.settings.sales_artifact_root),
