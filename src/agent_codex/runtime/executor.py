@@ -24,6 +24,7 @@ from ..integrations.llm import select_backend
 from ..memory import ConsolidationEngine, MemoryStore
 from ..skills import list_bundled_skills
 from .coordinator import Coordinator
+from .metrics import RuntimeMetricsCollector
 from .synthesizer import Synthesizer
 
 
@@ -80,6 +81,10 @@ class AgentExecutor:
         else:
             report["consolidation_ready"] = engine.should_run()
         return report
+
+    def metrics_report(self) -> dict:
+        collector = RuntimeMetricsCollector(self.settings, self.memory)
+        return collector.collect()
 
     def review_report(self, text: str) -> dict:
         violations = self.coordinator.validate_synthesis(text)
@@ -395,6 +400,12 @@ class AgentExecutor:
             self.settings.background_backend if headless else self.settings.primary_reasoning_backend,
             groq_api_key=self.settings.groq_api_key,
             groq_model=self.settings.groq_model,
+            openai_api_key=self.settings.openai_api_key,
+            openai_model=self.settings.openai_model,
+            anthropic_api_key=self.settings.anthropic_api_key,
+            anthropic_model=self.settings.anthropic_model,
+            ollama_base_url=self.settings.ollama_base_url,
+            ollama_model=self.settings.ollama_model,
         )
         evidence = [f"attachment:{item.local_path or item.file_name or item.file_id}" for item in attachments]
         evidence.extend(attachment_notes[:3])

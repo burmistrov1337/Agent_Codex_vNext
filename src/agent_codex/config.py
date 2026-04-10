@@ -21,6 +21,12 @@ class Settings:
     cheap_backend: str
     groq_api_key: str | None
     groq_model: str
+    openai_api_key: str | None
+    openai_model: str
+    anthropic_api_key: str | None
+    anthropic_model: str
+    ollama_base_url: str
+    ollama_model: str
     marketplace_artifact_root: Path
     sales_artifact_root: Path
     wb_api_timeout_seconds: int
@@ -35,7 +41,7 @@ class Settings:
 
     def validate(self) -> list[str]:
         issues: list[str] = []
-        supported_backends = {"deterministic", "null", "groq"}
+        supported_backends = {"deterministic", "null", "groq", "openai", "anthropic", "ollama"}
 
         for field_name, backend_name in (
             ("primary_reasoning_backend", self.primary_reasoning_backend),
@@ -49,6 +55,12 @@ class Settings:
                 )
             if backend_name == "groq" and not self.groq_api_key:
                 issues.append(f"{field_name} is set to 'groq', but GROQ_API_KEY is not configured.")
+            if backend_name == "openai" and not self.openai_api_key:
+                issues.append(f"{field_name} is set to 'openai', but OPENAI_API_KEY is not configured.")
+            if backend_name == "anthropic" and not self.anthropic_api_key:
+                issues.append(f"{field_name} is set to 'anthropic', but ANTHROPIC_API_KEY is not configured.")
+            if backend_name == "ollama" and not self.ollama_base_url.strip():
+                issues.append(f"{field_name} is set to 'ollama', but OLLAMA_BASE_URL is empty.")
 
         if self.telegram_bot_token and not self.telegram_allowed_chat_id:
             issues.append("TELEGRAM_ALLOWED_CHAT_ID or TELEGRAM_CHAT_ID must be configured when TELEGRAM_BOT_TOKEN is set.")
@@ -75,6 +87,12 @@ class Settings:
 
         if self.wb_api_timeout_seconds <= 0:
             issues.append("WB_API_TIMEOUT_SECONDS must be greater than zero.")
+        if self.openai_model.strip() == "":
+            issues.append("OPENAI_MODEL must not be empty.")
+        if self.anthropic_model.strip() == "":
+            issues.append("ANTHROPIC_MODEL must not be empty.")
+        if self.ollama_model.strip() == "":
+            issues.append("OLLAMA_MODEL must not be empty.")
 
         return issues
 
@@ -115,6 +133,12 @@ def load_settings(project_root: str | Path = ".") -> Settings:
         cheap_backend=env.get("CHEAP_BACKEND") or os.getenv("CHEAP_BACKEND") or "deterministic",
         groq_api_key=env.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY"),
         groq_model=env.get("GROQ_MODEL") or os.getenv("GROQ_MODEL") or "llama-3.3-70b-versatile",
+        openai_api_key=env.get("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY"),
+        openai_model=env.get("OPENAI_MODEL") or os.getenv("OPENAI_MODEL") or "gpt-5.4-mini",
+        anthropic_api_key=env.get("ANTHROPIC_API_KEY") or os.getenv("ANTHROPIC_API_KEY"),
+        anthropic_model=env.get("ANTHROPIC_MODEL") or os.getenv("ANTHROPIC_MODEL") or "claude-sonnet-4-5",
+        ollama_base_url=env.get("OLLAMA_BASE_URL") or os.getenv("OLLAMA_BASE_URL") or "http://127.0.0.1:11434",
+        ollama_model=env.get("OLLAMA_MODEL") or os.getenv("OLLAMA_MODEL") or "llama3.1:8b",
         marketplace_artifact_root=artifact_root.resolve(),
         sales_artifact_root=sales_artifact_root.resolve(),
         google_sheets_spreadsheet_id=(

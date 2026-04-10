@@ -11,6 +11,7 @@ class CommandSpec:
 
 COMMANDS = [
     CommandSpec("doctor", "Check config, layout, and adapter wiring."),
+    CommandSpec("metrics", "Collect runtime metrics for memory, tasks, artifacts, and backend setup."),
     CommandSpec("memory", "Show memory index and optionally run consolidation."),
     CommandSpec("review", "Check text against synthesis rules."),
     CommandSpec("tasks", "Show current runtime task files."),

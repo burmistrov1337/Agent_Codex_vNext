@@ -226,6 +226,17 @@ class VNextTests(unittest.TestCase):
             self.assertIn("config_issues", payload)
             self.assertIsInstance(payload["config_issues"], list)
 
+    def test_metrics_command_json(self) -> None:
+        with TemporaryDirectory() as tmp:
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                rc = main(["metrics", "--project-root", str(tmp), "--json"])
+            self.assertEqual(rc, 0)
+            payload = json.loads(buffer.getvalue())
+            self.assertIn("memory", payload)
+            self.assertIn("tasks", payload)
+            self.assertIn("backend_credentials", payload)
+
     def test_settings_validate_reports_inconsistent_google_and_groq_config(self) -> None:
         with TemporaryDirectory() as tmp:
             env_path = Path(tmp) / ".env"
@@ -242,6 +253,23 @@ class VNextTests(unittest.TestCase):
             issues = settings.validate()
             self.assertTrue(any("GROQ_API_KEY" in issue for issue in issues))
             self.assertTrue(any("Google Sheets is configured" in issue for issue in issues))
+
+    def test_settings_validate_reports_missing_openai_and_anthropic_keys(self) -> None:
+        with TemporaryDirectory() as tmp:
+            env_path = Path(tmp) / ".env"
+            env_path.write_text(
+                "\n".join(
+                    [
+                        "PRIMARY_REASONING_BACKEND=openai",
+                        "BACKGROUND_BACKEND=anthropic",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            settings = load_settings(tmp)
+            issues = settings.validate()
+            self.assertTrue(any("OPENAI_API_KEY" in issue for issue in issues))
+            self.assertTrue(any("ANTHROPIC_API_KEY" in issue for issue in issues))
 
     def test_marketplace_watch_headless_json(self) -> None:
         with TemporaryDirectory() as tmp:

@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 import json
+import re
 
 from ..config import Settings
 from .store import MemoryStore
@@ -12,6 +13,8 @@ from .store import MemoryStore
 class ConsolidationPolicy:
     min_hours_between_runs: int = 24
     min_session_events: int = 5
+    max_recent_logs: int = 10
+    stale_topic_days: int = 21
 
 
 class ConsolidationEngine:
@@ -47,13 +50,31 @@ class ConsolidationEngine:
             return {"status": "skipped", "reason": reason}
         self.lock_path.write_text("locked\n", encoding="utf-8")
         try:
-            recent_logs = sorted(self.store.logs_root.rglob("*.md"))[-7:]
-            combined = []
+            recent_logs = sorted(self.store.logs_root.rglob("*.md"))[-self.policy.max_recent_logs :]
+            note_candidates: list[str] = []
+            log_names: list[str] = []
             for path in recent_logs:
                 text = path.read_text(encoding="utf-8", errors="replace").strip()
                 if text:
-                    combined.append(f"## {path.name}\n\n{text}")
-            body = "\n\n".join(combined) or "No recent logs."
+                    log_names.append(path.name)
+                    note_candidates.extend(self._extract_notes(text))
+            stale_topics = self._find_stale_topics()
+            unique_notes = list(dict.fromkeys(note_candidates))
+
+            body_parts = ["## Key learnings", ""]
+            if unique_notes:
+                body_parts.extend(f"- {item}" for item in unique_notes[:12])
+            else:
+                body_parts.append("- No strong repeated learnings were extracted from recent logs.")
+
+            body_parts.extend(["", "## Sources", ""])
+            body_parts.extend(f"- {name}" for name in log_names or ["No recent logs."])
+
+            if stale_topics:
+                body_parts.extend(["", "## Stale topics to review", ""])
+                body_parts.extend(f"- {item}" for item in stale_topics[:10])
+
+            body = "\n".join(body_parts)
             topic_path = self.store.remember(
                 title="Recent Consolidated Learnings",
                 body=body,
@@ -63,7 +84,13 @@ class ConsolidationEngine:
             state["last_run_at"] = datetime.now(timezone.utc).isoformat()
             state["session_events_since_last_run"] = 0
             self._write_state(state)
-            return {"status": "completed", "topic_path": str(topic_path)}
+            return {
+                "status": "completed",
+                "topic_path": str(topic_path),
+                "source_logs": len(log_names),
+                "unique_notes": len(unique_notes),
+                "stale_topics": len(stale_topics),
+            }
         finally:
             if self.lock_path.exists():
                 self.lock_path.unlink()
@@ -75,3 +102,32 @@ class ConsolidationEngine:
 
     def _write_state(self, payload: dict) -> None:
         self.state_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    def _find_stale_topics(self) -> list[str]:
+        threshold = datetime.now(timezone.utc) - timedelta(days=self.policy.stale_topic_days)
+        stale: list[str] = []
+        for path in self.store.topics_root.glob("*.md"):
+            modified = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
+            if modified < threshold and path.stem != "recent-consolidated-learnings":
+                stale.append(path.stem.replace("-", " "))
+        return sorted(stale)
+
+    @staticmethod
+    def _extract_notes(text: str) -> list[str]:
+        notes: list[str] = []
+        for raw_line in text.splitlines():
+            line = re.sub(r"\s+", " ", raw_line.strip())
+            if not line:
+                continue
+            if line.startswith("#"):
+                line = line.lstrip("#").strip()
+            elif line.startswith("-"):
+                line = line[1:].strip()
+            elif line.startswith("*"):
+                line = line[1:].strip()
+            else:
+                line = line[:160]
+            if len(line) < 12:
+                continue
+            notes.append(line.rstrip(".") + ".")
+        return notes

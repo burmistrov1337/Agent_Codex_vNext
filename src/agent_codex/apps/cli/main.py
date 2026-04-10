@@ -55,6 +55,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "doctor":
         payload = executor.doctor_report()
         return _emit(payload, as_json=args.json)
+    if args.command == "metrics":
+        payload = executor.metrics_report()
+        return _emit(payload, as_json=True if args.json else False)
     if args.command == "memory":
         payload = executor.memory_report(run_consolidation=args.run_consolidation)
         return _emit(payload, as_json=args.json)

@@ -1,131 +1,58 @@
 # Agent_Codex vNext
 
-Новый clean-room репозиторий для следующего поколения `Agent_Codex`.
+Чистый репозиторий следующей итерации `Agent_Codex`, сфокусированный на локальном runtime, CLI и прикладных доменах без старого серверного слоя.
 
-## Цели
+## Что это за версия
 
-- одна server-ready агентная система для работы и учёбы;
-- явные runtime-контракты и hooks;
-- устойчивая память и журналы сессий;
-- полноценная marketplace-вертикаль как первый домен;
-- стабильные headless-запуски для `n8n` и Telegram.
+`vNext` нужен как более аккуратная основа для:
 
-## Что уже работает
-
-- Telegram-ingress в `vNext` через long polling;
-- headless CLI-команды для `doctor`, `marketplace-watch` и будущих scheduled-сценариев;
-- runtime-память и хранилище сессий в `.agent_codex/`;
-- генерация marketplace-артефактов, включая HTML-дашборды;
-- Docker Compose-контур для always-on бота и локального `n8n`.
+- локальной агентной работы через CLI;
+- явных runtime-контрактов, hooks и task lifecycle;
+- памяти, журналов сессий и артефактов в `.agent_codex/`;
+- прикладных доменов вроде marketplace и sales workbook;
+- подключения разных LLM backend без жёсткой привязки к одному провайдеру.
 
 ## Быстрый локальный старт
 
 ```powershell
 cd D:\Agent_Codex_vNext
 $env:PYTHONPATH='src'
-python -m agent_codex.apps.cli.main doctor
+python -m agent_codex.apps.cli.main doctor --json
+python -m agent_codex.apps.cli.main metrics --json
 python -m agent_codex.apps.cli.main marketplace-watch --sample-data --headless
-python -m agent_codex.apps.cli.main telegram-bot --once --json
 ```
 
-## Telegram-бот MVP
+## Основные команды
 
-Первый Telegram-ingress живёт в `vNext`, а не в старом репозитории.
+- `doctor` — проверить конфиг, layout и доступность поверхностей.
+- `metrics` — собрать краткую runtime-диагностику по памяти, задачам, артефактам и backend.
+- `memory` — посмотреть индекс памяти и при необходимости запустить consolidation.
+- `tasks` — посмотреть текущие task-файлы runtime.
+- `task-maintain` — прогнать maintenance-цикл для TaskBus.
+- `marketplace-watch` — собрать headless marketplace-run с артефактами.
+- `sales-sheet-*` — работать с sales workbook.
+- `telegram-bot` — локальный Telegram ingress, если он нужен в этой ветке.
 
-Текущая форма:
+## Переменные окружения
 
-- long polling;
-- single-user доступ через `TELEGRAM_ALLOWED_CHAT_ID`;
-- асинхронная очередь задач с `ack`, `confirm` и финальным ответом;
-- текст, документы и фотографии;
-- рискованные действия требуют `/confirm`.
+Базовый набор в `.env.example` покрывает:
 
-Нужные переменные окружения:
+- Telegram ingress;
+- Wildberries;
+- Google Sheets и AdvantShop для sales-домена;
+- backend-конфигурацию для `deterministic`, `null`, `groq`, `openai`, `anthropic`, `ollama`;
+- runtime paths в `.agent_codex/`.
 
-```env
-TELEGRAM_BOT_TOKEN=
-TELEGRAM_CHAT_ID=
-TELEGRAM_ALLOWED_CHAT_ID=
-TELEGRAM_POLL_TIMEOUT_SECONDS=20
-```
+## Структура runtime
 
-Полезные команды:
+По умолчанию runtime пишет данные в:
 
-```powershell
-python -m agent_codex.apps.cli.main telegram-bot
-python -m agent_codex.apps.cli.main telegram-bot --once --json
-```
+- `.agent_codex/memory/` — topics, logs и consolidation state;
+- `.agent_codex/sessions/` — сессионные события;
+- `.agent_codex/tasks/` — task bus envelopes;
+- `.agent_codex/artifacts/` — generated artifacts и run envelopes.
 
-Помощники для Windows:
+## Документация
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\start_telegram_bot.ps1
-powershell -ExecutionPolicy Bypass -File .\scripts\status_telegram_bot.ps1
-powershell -ExecutionPolicy Bypass -File .\scripts\logs_telegram_bot.ps1
-powershell -ExecutionPolicy Bypass -File .\scripts\stop_telegram_bot.ps1
-powershell -ExecutionPolicy Bypass -File .\scripts\install_telegram_bot_autostart.ps1
-```
-
-Важно:
-
-- одновременно должен работать только один long-polling инстанс;
-- если локальный Windows-бот уже активен, не запускай VPS-бота с тем же токеном, пока локальный процесс не остановлен.
-
-## Серверная схема
-
-Целевой сервер:
-
-- Ubuntu 22.04.5 LTS;
-- Docker Compose;
-- один always-on контейнер `agent_codex_bot`;
-- один sidecar-контейнер `n8n`;
-- постоянные runtime-данные в `.agent_codex/`;
-- постоянные данные `n8n` в `.docker/n8n/`.
-
-По умолчанию:
-
-- `n8n` слушает `127.0.0.1:5678`;
-- Telegram является основным live-ingress;
-- `doctor --json` используется как healthcheck и базовый smoke-test.
-
-## Первый bootstrap сервера
-
-На Ubuntu-хосте:
-
-```bash
-sudo bash deploy/bootstrap_server.sh
-```
-
-Скрипт подготавливает:
-
-- базовые пакеты;
-- timezone;
-- `ufw`;
-- `fail2ban`;
-- Docker и Docker Compose;
-- каталоги приложения в `/opt/agent_codex_vnext` и `/var/lib`.
-
-## Первый deploy на сервер
-
-```bash
-cd /opt/agent_codex_vnext
-cp .env.example .env
-vim .env
-bash deploy/deploy_stack.sh
-```
-
-Полезные операции:
-
-```bash
-bash deploy/stack_status.sh
-bash deploy/stack_logs.sh
-bash deploy/stack_logs.sh agent_codex_bot
-bash deploy/smoke_check.sh
-bash deploy/backup_runtime.sh
-```
-
-## Карта документации
-
-- `docs/server_readiness.md` — runbook по deploy и эксплуатации;
-- `docs/migration_matrix.md` — что мы переиспользуем, перепроектируем или отбрасываем;
-- `docs/claude_gap_target_spec.md` — явный аудит `vNext` относительно Claude-подобных архитектурных паттернов.
+- `docs/migration_matrix.md` — что в `vNext` уже перенесено, а что ещё нет;
+- `docs/claude_gap_target_spec.md` — архитектурный gap-analysis относительно более сильных агентных систем.

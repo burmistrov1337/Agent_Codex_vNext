@@ -14,7 +14,7 @@ This document captures the current state of `Agent_Codex_vNext` against the Clau
 - headless CLI entrypoints;
 - Telegram ingress MVP;
 - marketplace vertical MVP;
-- server-ready Docker and deploy scaffolding.
+- runtime-ready local scaffolding and operational hygiene.
 
 ### Needs Extension
 
@@ -153,7 +153,7 @@ Protected paths, scratchpad allow-rules, and audit behavior are already present 
 
 ### Gap
 
-Risk classes are still shallow, explanations can be richer, and server-safe policies need more depth.
+Risk classes are still shallow, explanations can be richer, and runtime-safe policies need more depth.
 
 ### Decision
 
@@ -164,12 +164,12 @@ Risk classes are still shallow, explanations can be richer, and server-safe poli
 - stronger risk classes per action family;
 - clearer explanations before risky actions;
 - stronger pre-reply quality gates;
-- server-safe defaults for deploy and automation scenarios.
+- safer defaults for local automation and runtime scenarios.
 
 ### Done When
 
 - risky operations are explainable, auditable, and consistently gated;
-- Telegram and server actions follow the same policy surface.
+- Telegram and local runtime actions follow the same policy surface.
 
 ## 6. Memory And Consolidation
 
