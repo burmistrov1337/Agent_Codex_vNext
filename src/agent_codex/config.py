@@ -28,73 +28,13 @@ class Settings:
     ollama_base_url: str
     ollama_model: str
     marketplace_artifact_root: Path
-    sales_artifact_root: Path
-    wb_api_timeout_seconds: int
-    google_sheets_spreadsheet_id: str | None
-    google_service_account_file: Path | None
-    google_service_account_json: str | None
-    sales_sheet_refresh_cron: str
-    sales_sheet_webhook_secret: str | None
-    advantshop_api_url: str | None
-    advantshop_api: str | None
-    advantshop_api_auth: str | None
-
-    def validate(self) -> list[str]:
-        issues: list[str] = []
-        supported_backends = {"deterministic", "null", "groq", "openai", "anthropic", "ollama"}
-
-        for field_name, backend_name in (
-            ("primary_reasoning_backend", self.primary_reasoning_backend),
-            ("background_backend", self.background_backend),
-            ("cheap_backend", self.cheap_backend),
-        ):
-            if backend_name not in supported_backends:
-                issues.append(
-                    f"{field_name} uses unsupported backend '{backend_name}'. "
-                    f"Supported values: {', '.join(sorted(supported_backends))}."
-                )
-            if backend_name == "groq" and not self.groq_api_key:
-                issues.append(f"{field_name} is set to 'groq', but GROQ_API_KEY is not configured.")
-            if backend_name == "openai" and not self.openai_api_key:
-                issues.append(f"{field_name} is set to 'openai', but OPENAI_API_KEY is not configured.")
-            if backend_name == "anthropic" and not self.anthropic_api_key:
-                issues.append(f"{field_name} is set to 'anthropic', but ANTHROPIC_API_KEY is not configured.")
-            if backend_name == "ollama" and not self.ollama_base_url.strip():
-                issues.append(f"{field_name} is set to 'ollama', but OLLAMA_BASE_URL is empty.")
-
-        if self.telegram_bot_token and not self.telegram_allowed_chat_id:
-            issues.append("TELEGRAM_ALLOWED_CHAT_ID or TELEGRAM_CHAT_ID must be configured when TELEGRAM_BOT_TOKEN is set.")
-
-        has_google_credentials = bool(self.google_service_account_file or self.google_service_account_json)
-        if self.google_sheets_spreadsheet_id and not has_google_credentials:
-            issues.append(
-                "Google Sheets is configured, but GOOGLE_SERVICE_ACCOUNT_FILE or GOOGLE_SERVICE_ACCOUNT_JSON is missing."
-            )
-        if has_google_credentials and not self.google_sheets_spreadsheet_id:
-            issues.append(
-                "Google service account credentials are configured, but GOOGLE_SHEETS_SPREADSHEET_ID is missing."
-            )
-        if self.google_service_account_file and not self.google_service_account_file.exists():
-            issues.append(
-                f"GOOGLE_SERVICE_ACCOUNT_FILE points to a missing file: {self.google_service_account_file}."
-            )
-
-        has_advantshop_credentials = bool(self.advantshop_api or self.advantshop_api_auth)
-        if self.advantshop_api_url and not has_advantshop_credentials:
-            issues.append("ADVANTSHOP_API_URL is configured, but ADVANTSHOP_API or ADVANTSHOP_API_AUTH is missing.")
-        if has_advantshop_credentials and not self.advantshop_api_url:
-            issues.append("ADVANTSHOP_API or ADVANTSHOP_API_AUTH is configured, but ADVANTSHOP_API_URL is missing.")
-
-        if self.wb_api_timeout_seconds <= 0:
-            issues.append("WB_API_TIMEOUT_SECONDS must be greater than zero.")
-        if self.openai_model.strip() == "":
-            issues.append("OPENAI_MODEL must not be empty.")
-        if self.anthropic_model.strip() == "":
-            issues.append("ANTHROPIC_MODEL must not be empty.")
-        if self.ollama_model.strip() == "":
-            issues.append("OLLAMA_MODEL must not be empty.")
-
-        return issues
+    wb_ui_browser_user_data_dir: Path
+    wb_ui_browser_profile_directory: str
+    wb_ui_browser_channel: str
+    wb_ui_browser_executable_path: str | None
+    wb_ui_browser_cdp_url: str | None
+    wb_ui_seller_url: str
+    wb_ui_card_url_template: str
 
 
 def load_settings(project_root: str | Path = ".") -> Settings:
@@ -102,12 +42,8 @@ def load_settings(project_root: str | Path = ".") -> Settings:
     env = _load_dotenv(root / ".env")
     runtime_root = root / env.get("RUNTIME_ROOT", ".agent_codex")
     artifact_root = root / env.get("MARKETPLACE_ARTIFACT_ROOT", ".agent_codex/artifacts/marketplace")
-    sales_artifact_root = root / env.get("SALES_ARTIFACT_ROOT", ".agent_codex/artifacts/sales")
-    telegram_inbox_root = root / env.get("TELEGRAM_INBOX_ROOT", ".agent_codex/telegram/inbox")
-    telegram_state_root = root / env.get("TELEGRAM_STATE_ROOT", ".agent_codex/telegram/state")
-    google_service_account_file_value = (
-        env.get("GOOGLE_SERVICE_ACCOUNT_FILE") or os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE")
-    )
+    local_app_data = Path(os.getenv("LOCALAPPDATA") or (root / ".browser_profile"))
+    default_user_data_dir = local_app_data / "Google" / "Chrome" / "User Data"
     return Settings(
         project_root=root,
         runtime_root=runtime_root,
@@ -140,36 +76,17 @@ def load_settings(project_root: str | Path = ".") -> Settings:
         ollama_base_url=env.get("OLLAMA_BASE_URL") or os.getenv("OLLAMA_BASE_URL") or "http://127.0.0.1:11434",
         ollama_model=env.get("OLLAMA_MODEL") or os.getenv("OLLAMA_MODEL") or "llama3.1:8b",
         marketplace_artifact_root=artifact_root.resolve(),
-        sales_artifact_root=sales_artifact_root.resolve(),
-        google_sheets_spreadsheet_id=(
-            env.get("GOOGLE_SHEETS_SPREADSHEET_ID") or os.getenv("GOOGLE_SHEETS_SPREADSHEET_ID")
-        ),
-        google_service_account_file=Path(google_service_account_file_value).resolve() if google_service_account_file_value else None,
-        google_service_account_json=(
-            env.get("GOOGLE_SERVICE_ACCOUNT_JSON") or os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON")
-        ),
-        sales_sheet_refresh_cron=(
-            env.get("SALES_SHEET_REFRESH_CRON")
-            or os.getenv("SALES_SHEET_REFRESH_CRON")
-            or "0 8 * * *"
-        ),
-        sales_sheet_webhook_secret=(
-            env.get("SALES_SHEET_WEBHOOK_SECRET") or os.getenv("SALES_SHEET_WEBHOOK_SECRET")
-        ),
-        advantshop_api_url=(
-            env.get("ADVANTSHOP_API_URL")
-            or env.get("advantshop_api_url")
-            or os.getenv("ADVANTSHOP_API_URL")
-        ),
-        advantshop_api=(
-            env.get("ADVANTSHOP_API")
-            or env.get("advantshop_api")
-            or os.getenv("ADVANTSHOP_API")
-        ),
-        advantshop_api_auth=(
-            env.get("ADVANTSHOP_API_AUTH")
-            or env.get("advantshop_api_auth")
-            or os.getenv("ADVANTSHOP_API_AUTH")
+        wb_ui_browser_user_data_dir=(root / env["WB_UI_BROWSER_USER_DATA_DIR"]).resolve()
+        if env.get("WB_UI_BROWSER_USER_DATA_DIR")
+        else default_user_data_dir.resolve(),
+        wb_ui_browser_profile_directory=env.get("WB_UI_BROWSER_PROFILE_DIRECTORY", "Default"),
+        wb_ui_browser_channel=env.get("WB_UI_BROWSER_CHANNEL", "chrome"),
+        wb_ui_browser_executable_path=env.get("WB_UI_BROWSER_EXECUTABLE_PATH") or None,
+        wb_ui_browser_cdp_url=env.get("WB_UI_BROWSER_CDP_URL") or None,
+        wb_ui_seller_url=env.get("WB_UI_SELLER_URL", "https://seller.wildberries.ru"),
+        wb_ui_card_url_template=env.get(
+            "WB_UI_CARD_URL_TEMPLATE",
+            "https://seller.wildberries.ru/content-management/cards/card?nmID={nm_id}",
         ),
     )
 

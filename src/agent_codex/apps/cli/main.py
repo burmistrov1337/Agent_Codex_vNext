@@ -79,6 +79,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "study-digest":
         payload = executor.study_digest_report(args.input)
         return _emit(payload, as_json=args.json)
+    if args.command == "wb-tnved-ui-catalog":
+        payload = executor.run_wb_tnved_ui_catalog()
+        return _emit(payload, as_json=args.json)
     if args.command == "marketplace-watch":
         envelope = executor.run_marketplace_watch(
             top_limit=args.top_limit,

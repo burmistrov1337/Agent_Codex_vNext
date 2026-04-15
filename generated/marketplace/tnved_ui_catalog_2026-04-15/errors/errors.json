@@ -1,0 +1,26 @@
+[
+  {
+    "subject_id": 2677,
+    "category_name": "Дозаторы косметические",
+    "nm_id": 517990170,
+    "error": "Unable to open TN VED selector modal"
+  },
+  {
+    "subject_id": 6808,
+    "category_name": "Отдушки косметические",
+    "nm_id": 468039063,
+    "error": "Unable to open TN VED selector modal"
+  },
+  {
+    "subject_id": 270,
+    "category_name": "Свечи",
+    "nm_id": 36959068,
+    "error": "Unable to open TN VED selector modal"
+  },
+  {
+    "subject_id": 1482,
+    "category_name": "Флаконы косметические",
+    "nm_id": 518008878,
+    "error": "Unable to open TN VED selector modal"
+  }
+]

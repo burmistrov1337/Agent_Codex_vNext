@@ -12,13 +12,8 @@ authors = [
   { name = "Dasha + Codex" }
 ]
 dependencies = [
-  "google-auth>=2.38.0",
-  "requests>=2.32.0",
+  "playwright>=1.53.0",
 ]
-
-[project.optional-dependencies]
-dev = ["ruff>=0.9", "mypy>=1.14", "pytest>=8.3", "pytest-cov>=6.0"]
-pdf = ["reportlab>=4.2"]
 
 [project.scripts]
 agent-codex = "agent_codex.apps.cli.main:main"

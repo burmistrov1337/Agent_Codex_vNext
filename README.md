@@ -20,6 +20,8 @@ $env:PYTHONPATH='src'
 python -m agent_codex.apps.cli.main doctor --json
 python -m agent_codex.apps.cli.main metrics --json
 python -m agent_codex.apps.cli.main marketplace-watch --sample-data --headless
+python -m playwright install chromium
+python -m agent_system.cli --project-root . --wb-tnved-ui-catalog --json
 ```
 
 ## Основные команды

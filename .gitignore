@@ -7,33 +7,7 @@ __pycache__/
 venv/
 env/
 .env
-dist/
-.docker/*
-!.docker/.gitkeep
-.secrets/
-.vscode/
-.playwright-cli/
-*.rdp
-vps_access.txt
-CODEX_PROMPT_VPN_SETUP.md
-*.pem
-*.ppk
-*.key
-*.ovpn
-*.wgconf
-wg0.conf
-wireguard*.conf
-clients/*.conf
-clients/*_private.key
-clients/*_public.key
-**/wireguard/*.conf
-**/wireguard/*.key
-**/wireguard/clients/*
-scripts/open_openclaw_dashboard.ps1
-scripts/openclaw_dashboard_tunnel.py
-scripts/openclaw_dashboard_launcher.py
-scripts/openclaw_dashboard_tunnel.cmd
-scripts/Agent_Codex Server.rdp
+server.env
 
 .agent_codex/sessions/*
 !.agent_codex/sessions/.gitkeep

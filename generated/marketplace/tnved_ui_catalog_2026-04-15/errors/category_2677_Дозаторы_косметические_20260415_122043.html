@@ -1,0 +1,442 @@
+<!DOCTYPE html><html lang="ru" dir="ltr" style="--header-height: 60px; --header-height-mobile: 60px;"><head>
+    <meta charset="utf-8">
+    <meta name="google" value="notranslate">
+    <link rel="preconnect" href="https://static-basket-02.wbbasket.ru">
+    <link rel="icon" href="https://static-basket-02.wbbasket.ru/vol20/root-monorepo/latest/favicon.ico">
+    <meta property="og:image" content="https://static-basket-02.wbbasket.ru/vol20/root-monorepo/latest/favicon.ico">
+    <link rel="manifest" crossorigin="use-credentials" href="/manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#fff">
+    <meta name="yandex-verification" content="61b95d33285e2612">
+    <meta name="google-site-verification" content="guMau7oNvBifqUhZGuuGVtiGD0HkKe8v6uwYpvj2ZIg">
+    <title>Wildberries</title>
+    <script async="" src="https://a.wb.ru/sdk/sdk.js"></script><script>
+      window.ADDITIONAL_MENU_CONFIG = [
+  {'name':'menu.unreg-supplier-home-page-front','hidden':true,'defaultRoute':true},
+  {'name':'menu.main-page','hidden':true,'defaultRoute':true},
+  {'name':'menu.main-page-onboarding','hidden':true,'defaultRoute':true},
+  {'name':'menu.ban-page','hidden':true,'defaultRoute':true},
+  {'name':'menu.offerta-front'},
+  {'name':'menu.registration'},
+  {'name':'menu.pvz-ban-page-front','hidden':true}
+]
+;
+      window.__ENDPOINTS__ = {
+  VALIDATE_TOKEN: '/ns/passport-portal/suppliers-portal-ru/validate',
+  CDN_CONFIG_ENDPOINT: 'https://cdn.wbbasket.ru/api/v3/upstreams',
+  ROOT_ENDPOINT_SUPPLIER_AUTH: '/ns/suppliers-auth/suppliers-portal-core/auth/token',
+  CALLCENTER_BADGE_COUNT_V3: 'https://seller-callcenter.wildberries.ru/ns/suppliers-communication-api/callcenter/public/v3/badge/count',
+  ENDPOINT_NOTIFICATIONS: 'https://seller-communications.wildberries.ru/ns/notifications/suppliers-portal-eu/notifications',
+  MFA_GET_STATE_ENDPOINT: '/ns/mfa-action/portal-core',
+  PORTAL_SEARCH_ENDPOINT: '/ns/portal-search/portal-core',
+  PORTAL_LANDING: '/about-portal',
+  ENDPOINT_BANNERS_BASKET: 'https://static-basket-02.wbbasket.ru/vol20/banner-homepage/prd',
+  ENDPOINT_CHAT_SHARDS: 'https://static-basket-09.wbbasket.ru/vol174/chat/api/shards/shard-29808.json',
+  ENDPOINT_CHAT_SELLER: 'https://seller-chat.wildberries.ru',
+  ROOT_ENDPOINT_ABAC: '/ns/abac/suppliers-portal-core/',
+  ROOT_ENDPOINT_NG_ABAC: '/ns/ng-abac-access/suppliers-portal-core/',
+  LOAD_MENU_FILE_REQUEST_ENDPOINT: 'https://static-basket-02.wbbasket.ru/vol20/menu/v0.0.1/config.json',
+  LOGIN_PAGE_ENDPOINT: 'https://seller-auth.wildberries.ru',
+  LOGGER_ENDPOINT: '/ns/logs/suppliers-portal-eu/logs/createErrorLog',
+  LAYOUT_ENDPOINT_ABAC: '/ns/abac/suppliers-portal-core/abac/scope/attribute/get',
+  SUPPLIERS_ENDPOINT: '/ns/suppliers/suppliers-portal-core/suppliers',
+  LOAD_CONFIG_MENU_FILE_REQUEST_URL: '/datastorage/file',
+  LOAD_MENU_REQUEST_ENDPOINT: '/ns/menu/suppliers-portal-ru/v2/menu/getMainMenu',
+  LANGUAGES_ENDPOINT: 'https://mstatic.wbstatic.net/suppliers-portal-I18N/v0.0.2/languages.json',
+  AUTH_V3_BASE: 'https://seller-auth.wildberries.ru/auth',
+  QUIZ_STATIC_ENDPOINT: 'https://static-basket-02.wbbasket.ru/vol24/quiz/{quizId}',
+  AB_SPLITTER_ENDPOINT: 'https://splitter.wb.ru',
+}
+;
+      window.TRUSTED_ZONES = [
+  'discounts-prices.wildberries.ru',
+  'farvater.wildberries.ru',
+  'finance.wildberries.ru',
+  'marketplace.wildberries.ru',
+  'seller-antiplag.wildberries.ru',
+  'seller-auth.wildberries.ru',
+  'seller-brands.wildberries.ru',
+  'seller-callcenter.wildberries.ru',
+  'seller-chat.wildberries.ru',
+  'seller-communications.wildberries.ru',
+  'seller-content.wildberries.ru',
+  'seller-dp-cashback.wildberries.ru',
+  'seller-loans.wildberries.ru',
+  'seller-my-brands.wildberries.ru',
+  'seller-portal-blue.wildberries.ru',
+  'seller-portal-green.wildberries.ru',
+  'seller-price-index.wildberries.ru',
+  'seller-reviews.wildberries.ru',
+  'seller-services.wildberries.ru',
+  'seller-supply.wildberries.ru',
+  'seller-weekly-report.wildberries.ru',
+  'seller.wildberries.ru',
+]
+;
+      window.DYNAMIC_LOADER_MENU_FROM_STORE = true;
+      window.REPLACEMENT_BY_ZONE = {};
+      window.OWN_ZONES = [
+  'discounts-prices.wildberries.ru',
+  'farvater.wildberries.ru',
+  'marketplace.wildberries.ru',
+  'seller-antiplag.wildberries.ru',
+  'seller-auth.wildberries.ru',
+  'seller-brands.wildberries.ru',
+  'seller-callcenter.wildberries.ru',
+  'seller-chat.wildberries.ru',
+  'seller-communications.wildberries.ru',
+  'seller-content.wildberries.ru',
+  'seller-dp-cashback.wildberries.ru',
+  'seller-my-brands.wildberries.ru',
+  'seller-portal-blue.wildberries.ru',
+  'seller-portal-green.wildberries.ru',
+  'seller-price-index.wildberries.ru',
+  'seller-reviews.wildberries.ru',
+  'seller-services.wildberries.ru',
+  'seller-supply.wildberries.ru',
+  'seller-weekly-report.wildberries.ru',
+  'seller.wildberries.ru',
+]
+;
+      window.ENVS = {
+  DISABLE_PERSONAL_DATA_REQUEST: true,
+  ENABLE_SELLER_AUTH: true,
+  DISABLE_RUNTIME_CONFIG: true,
+  NOTIFICATION_QUIZ_ID: '83a983a9-01be-4f87-a975-756d0dfcd385',
+  AB_SPLITTER_KEY: 'fe1af366-1608-4e8b-a8c7-bc18ee5a426a',
+  ENABLE_NG_ABAC: false,
+  ENABLE_CDN_V3: true,
+  MFA_CHECK_ENABLE: true,
+  ENABLE_PORTAL_LANDING: true,
+  WB_ANALYTICS_COUNTER_ID: 7,
+  VERSION: 'v2.8.164',
+  REFRESH_WINDOW_TIMEOUT: '604800000',
+  SENTRY_DSN_CLIENT:
+    'https://094a48035148e4bd8ff0e4b6f4d27adb@marketplace-sentry.wb.ru/11',
+  SENTRY_ENVIRONMENT_NAME: 'production',
+  MAIN_ABAC_SCOPE: 'suppliers',
+  BACKGROUND_COLOR: '#e5e5e5',
+  REFRESH_NOTIFICATIONS_INTERVAL_MS: 100000,
+  NOT_FOUND_MENU_ITEMS: [
+    'menu.categories.promo-calendar-front-old',
+    'menu.categories.user-settings-profile',
+    'menu.main-page',
+    'menu.goods.product-card-supplier',
+  ],
+  LOGO_VARIANT_MAP: {},
+  NMID_DATA: [
+    { domain: 'basket-01.wbbasket.ru', minVol: 0, maxVol: 143 },
+    { domain: 'basket-02.wbbasket.ru', minVol: 144, maxVol: 287 },
+    { domain: 'basket-03.wbbasket.ru', minVol: 288, maxVol: 431 },
+    { domain: 'basket-04.wbbasket.ru', minVol: 432, maxVol: 719 },
+    { domain: 'basket-05.wbbasket.ru', minVol: 720, maxVol: 1007 },
+    { domain: 'basket-06.wbbasket.ru', minVol: 1008, maxVol: 1061 },
+    { domain: 'basket-07.wbbasket.ru', minVol: 1062, maxVol: 1115 },
+    { domain: 'basket-08.wbbasket.ru', minVol: 1116, maxVol: 1169 },
+    { domain: 'basket-09.wbbasket.ru', minVol: 1170, maxVol: 1313 },
+    { domain: 'basket-10.wbbasket.ru', minVol: 1314, maxVol: 1601 },
+    { domain: 'basket-11.wbbasket.ru', minVol: 1602, maxVol: 1655 },
+    { domain: 'basket-12.wbbasket.ru', minVol: 1656, maxVol: 1919 },
+    { domain: 'basket-13.wbbasket.ru', minVol: 1920, maxVol: 2045 },
+    { domain: 'basket-14.wbbasket.ru', minVol: 2046, maxVol: 2189 },
+    { domain: 'basket-15.wbbasket.ru', minVol: 2190, maxVol: 2405 },
+    { domain: 'basket-16.wbbasket.ru', minVol: 2406, maxVol: 2621 },
+    { domain: 'basket-17.wbbasket.ru', minVol: 2622, maxVol: 2837 },
+    { domain: 'basket-18.wbbasket.ru', minVol: 2838, maxVol: 3053 },
+    { domain: 'basket-19.wbbasket.ru', minVol: 3054, maxVol: 3269 },
+    { domain: 'basket-20.wbbasket.ru', minVol: 3270, maxVol: 3485 },
+    { domain: 'basket-21.wbbasket.ru', minVol: 3486, maxVol: 3701 },
+    { domain: 'basket-22.wbbasket.ru', minVol: 3702, maxVol: 3917 },
+    { domain: 'basket-23.wbbasket.ru', minVol: 3918, maxVol: 4133 },
+    { domain: 'basket-24.wbbasket.ru', minVol: 4134, maxVol: 4349 },
+    { domain: 'basket-25.wbbasket.ru', minVol: 4350, maxVol: 4565 },
+    { domain: 'basket-26.wbbasket.ru', minVol: 4566, maxVol: 4877 },
+    { domain: 'basket-27.wbbasket.ru', minVol: 4878, maxVol: 5189 },
+    { domain: 'basket-28.wbbasket.ru', minVol: 5190, maxVol: 5501 },
+    { domain: 'basket-29.wbbasket.ru', minVol: 5502, maxVol: 5813 },
+    { domain: 'basket-30.wbbasket.ru', minVol: 5814, maxVol: 6125 },
+    { domain: 'basket-31.wbbasket.ru', minVol: 6126, maxVol: 6437 },
+    { domain: 'basket-32.wbbasket.ru', minVol: 6438, maxVol: 6749 },
+    { domain: 'basket-33.wbbasket.ru', minVol: 6750, maxVol: 7061 },
+    { domain: 'basket-34.wbbasket.ru', minVol: 7062, maxVol: 7373 },
+    { domain: 'basket-35.wbbasket.ru', minVol: 7374, maxVol: 7685 },
+    { domain: 'basket-36.wbbasket.ru', minVol: 7686, maxVol: 7997 },
+    { domain: 'basket-37.wbbasket.ru', minVol: 7998, maxVol: 8309 },
+    { domain: 'basket-38.wbbasket.ru', minVol: 8310, maxVol: 8741 },
+    { domain: 'basket-39.wbbasket.ru', minVol: 8742, maxVol: 9173 },
+    { domain: 'basket-40.wbbasket.ru', minVol: 9174, maxVol: 9605 },
+    { domain: 'basket-41.wbbasket.ru', minVol: 9606, maxVol: 10373 },
+    { domain: 'basket-42.wbbasket.ru', minVol: 10374, maxVol: 11141 },
+    { domain: 'basket-43.wbbasket.ru', minVol: 11142, maxVol: 11909 },
+  ],
+  ROOT_ABAC_FEATURES: [
+    '[aA]dmin',
+    '[bB]anned',
+    '[mM]enu',
+    '[rR]oute',
+    'accessIsBanned',
+    'accessMSC',
+    'activeSupplier',
+    'balanceDashboard',
+    'balanceWidget',
+    'bonusPromoSupplier',
+    'disableBalanceACL',
+    'disabled',
+    'hasGlobalNewBalance',
+    'hasGlobalNewBalanceWithdraw',
+    'hasNewBalance',
+    'hasNewBalanceChart',
+    'isMarketplaceSaleDbs',
+    'isOwnerSupplier',
+    'isShowAppealsNotificationCounter',
+    'isWebVitalsEnabled',
+    'marketplaceSale',
+    'menuPointsForReviewsBanner',
+    'portal/marketplace',
+    'PWAIsShown',
+    'quizModalPersistent',
+    'quizNanoFront',
+    'reloadPageOnSupplierChange',
+    'removePhotoFrontend',
+    'root',
+    'showRegistrationMenu',
+    'useRefreshNotifications',
+    'withoutSupplier',
+    'shouldUseSupplierToken',
+  ],
+  RUNTIME_ENV: 'prod',
+  FINGERPRINT_FACCT_ENABLED: true,
+  FINGERPRINT_BIZONE_ENABLED: false,
+  FINGERPRINT_CYBERTRONICS_ENABLED: false,
+  WB_ANALYTICS_COOKIE_DOMAIN: '.wildberries.ru',
+}
+;
+      window.PUBLIC_STATIC_HOST = "https://static-basket-02.wbbasket.ru";
+
+      window.FETCH_MENU_CACHE_KEY_FUNCTION = ({ getCookie }) => { return { key: getCookie("x-supplier-id") || null };};
+      window.INIT_ABAC_PARAMS_FUNCTION = ({ getCookie }) => { return { key: getCookie("x-supplier-id") || null };};
+
+      window.LANGUAGES_FALLBACK = ["ru","en","zh","ka","uz","hy","kk"];
+
+      window.LOGOUT_REQUIRED_EXTERNAL_ORIGINS = [];
+      window.__ROOT_URLS__ = ["/not-found"];
+      /* v1.87.2 */
+    </script>
+    <!-- PWA ios icons -->
+    <!-- <link rel="apple-touch-icon" sizes="16x16" href="%PUBLIC_URL%/icons/ios/16.png" />
+  <link rel="apple-touch-icon" sizes="20x20" href="%PUBLIC_URL%/icons/ios/20.png" />
+  <link rel="apple-touch-icon" sizes="29x29" href="%PUBLIC_URL%/icons/ios/29.png" />
+  <link rel="apple-touch-icon" sizes="32x32" href="%PUBLIC_URL%/icons/ios/32.png" />
+  <link rel="apple-touch-icon" sizes="40x40" href="%PUBLIC_URL%/icons/ios/40.png" />
+  <link rel="apple-touch-icon" sizes="50x50" href="%PUBLIC_URL%/icons/ios/50.png" />
+  <link rel="apple-touch-icon" sizes="57x57" href="%PUBLIC_URL%/icons/ios/57.png" />
+  <link rel="apple-touch-icon" sizes="58x58" href="%PUBLIC_URL%/icons/ios/58.png" />
+  <link rel="apple-touch-icon" sizes="60x60" href="%PUBLIC_URL%/icons/ios/60.png" />
+  <link rel="apple-touch-icon" sizes="64x64" href="%PUBLIC_URL%/icons/ios/64.png" />
+  <link rel="apple-touch-icon" sizes="72x72" href="%PUBLIC_URL%/icons/ios/72.png" />
+  <link rel="apple-touch-icon" sizes="76x76" href="%PUBLIC_URL%/icons/ios/76.png" />
+  <link rel="apple-touch-icon" sizes="80x80" href="%PUBLIC_URL%/icons/ios/80.png" />
+  <link rel="apple-touch-icon" sizes="87x87" href="%PUBLIC_URL%/icons/ios/87.png" />
+  <link rel="apple-touch-icon" sizes="100x100" href="%PUBLIC_URL%/icons/ios/100.png" />
+  <link rel="apple-touch-icon" sizes="114x114" href="%PUBLIC_URL%/icons/ios/114.png" />
+  <link rel="apple-touch-icon" sizes="120x120" href="%PUBLIC_URL%/icons/ios/120.png" />
+  <link rel="apple-touch-icon" sizes="128x128" href="%PUBLIC_URL%/icons/ios/128.png" />
+  <link rel="apple-touch-icon" sizes="144x144" href="%PUBLIC_URL%/icons/ios/144.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="%PUBLIC_URL%/icons/ios/152.png" />
+  <link rel="apple-touch-icon" sizes="167x167" href="%PUBLIC_URL%/icons/ios/167.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/icons/ios/180.png" />
+  <link rel="apple-touch-icon" sizes="192x192" href="%PUBLIC_URL%/icons/ios/192.png" />
+  <link rel="apple-touch-icon" sizes="256x256" href="%PUBLIC_URL%/icons/ios/256.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="%PUBLIC_URL%/icons/ios/512.png" />
+  <link rel="apple-touch-icon" sizes="1024x1024" href="%PUBLIC_URL%/icons/ios/1024.png" /> -->
+
+    <!-- PWA ios splash-screens -->
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-2048-2732.jpg"
+    media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-2732-2048.jpg"
+    media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1668-2388.jpg"
+    media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-2388-1668.jpg"
+    media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1536-2048.jpg"
+    media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-2048-1536.jpg"
+    media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1668-2224.jpg"
+    media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-2224-1668.jpg"
+    media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1620-2160.jpg"
+    media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-2160-1620.jpg"
+    media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1284-2778.jpg"
+    media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-2778-1284.jpg"
+    media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1170-2532.jpg"
+    media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-2532-1170.jpg"
+    media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1125-2436.jpg"
+    media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-2436-1125.jpg"
+    media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1242-2688.jpg"
+    media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-2688-1242.jpg"
+    media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-828-1792.jpg"
+    media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1792-828.jpg"
+    media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1242-2208.jpg"
+    media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-2208-1242.jpg"
+    media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-750-1334.jpg"
+    media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1334-750.jpg"
+    media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-640-1136.jpg"
+    media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1136-640.jpg"
+    media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" /> -->
+
+    <!-- https://github.com/GoogleChromeLabs/tti-polyfill -->
+    <script>
+      !(function () {
+        if ('PerformanceLongTaskTiming' in window) {
+          var g = (window.__tti = { e: [] });
+          g.o = new PerformanceObserver(function (l) {
+            g.e = g.e.concat(l.getEntries());
+          });
+          g.o.observe({ entryTypes: ['longtask'] });
+        }
+      })();
+    </script>
+
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        height: 100%;
+        width: 100%;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      .circular--modern {
+        animation: rotate 2s linear infinite;
+        bottom: 0;
+        height: 100%;
+        left: 0;
+        margin: auto;
+        position: absolute;
+        right: 0;
+        top: 0;
+        transform-origin: center center;
+        width: 100%;
+      }
+
+      .path--modern {
+        animation: dash 1.5s ease-in-out infinite, color 6s ease-in-out infinite;
+        stroke: #3a0078;
+        stroke-dasharray: 1, 200;
+        stroke-dashoffset: 0;
+        stroke-linecap: round;
+      }
+
+      @keyframes rotate {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes dash {
+        0% {
+          stroke-dasharray: 1, 200;
+          stroke-dashoffset: 0;
+        }
+
+        50% {
+          stroke-dasharray: 89, 200;
+          stroke-dashoffset: -35px;
+        }
+
+        100% {
+          stroke-dasharray: 89, 200;
+          stroke-dashoffset: -124px;
+        }
+      }
+
+      .icon-layout {
+        display: none;
+
+        flex-direction: column;
+        height: 100vh;
+        justify-content: center;
+        width: 100%;
+      }
+
+      .icon-layout--shown {
+        display: flex;
+      }
+
+      .loading-icon {
+        margin: 0 auto;
+        position: relative;
+        width: 100px;
+      }
+
+      .loading-icon::before {
+        content: '';
+        display: block;
+        padding-top: 100%;
+      }
+
+      .circular {
+        animation: rotate 2s linear infinite;
+        bottom: 0;
+        height: 100%;
+        left: 0;
+        margin: auto;
+        position: absolute;
+        right: 0;
+        top: 0;
+        transform-origin: center center;
+        width: 100%;
+      }
+
+      .path {
+        stroke: #6c11c9;
+        stroke-dasharray: 90, 200;
+        stroke-dashoffset: 0;
+        stroke-linecap: round;
+      }
+
+      @keyframes rotate {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  <link rel="stylesheet" href="https://static-basket-02.wbbasket.ru/vol20/root-monorepo/latest/vendor.4f0948f24a1243f8.css"><link rel="stylesheet" href="https://static-basket-02.wbbasket.ru/vol20/root-monorepo/latest/main.8bf5e3bf2d7742d6.css"><style id="_s5815819056512226">.UwsrJONbXLrV{display:none;position:absolute;left:-9999px;}.QrGULmLcTEJr{display:inline;}.sTLkJrkbOTsp{display:none;}</style><link rel="stylesheet" type="text/css" href="https://static-basket-02.wbbasket.ru/vol20/root-monorepo/latest/20.db5082e426a3af7b.css"><link rel="stylesheet" type="text/css" href="https://static-basket-02.wbbasket.ru/vol20/root-monorepo/latest/109.08f3e2fe4c998c41.css"><link rel="stylesheet" type="text/css" href="https://static-basket-02.wbbasket.ru/vol20/root-monorepo/latest/610.f6e9a7798e81ac3e.css"><link rel="stylesheet" type="text/css" href="https://static-basket-02.wbbasket.ru/vol20/root-monorepo/latest/1.03ae07cadba4aa60.css"><style data-styled="active" data-styled-version="6.3.11"></style><link rel="stylesheet" type="text/css" href="https://static-basket-02.wbbasket.ru/vol20/root-monorepo/latest/714.1dea565680c19aa5.css"><link rel="stylesheet" type="text/css" href="https://static-basket-02.wbbasket.ru/vol20/home-page-front/v4.92.0/index.9b829710ad522fac3afe.css" crossorigin="anonymous"><link rel="stylesheet" type="text/css" href="https://static-basket-02.wbbasket.ru/vol20/home-page-front/v4.92.0/index.1e46a5c462cb327d7136.css" crossorigin="anonymous"><link rel="stylesheet" type="text/css" href="https://static-basket-02.wbbasket.ru/vol20/service-banner-nano-front/v2.0.1/index.4fd2c953b249038c72d4.css" crossorigin="anonymous"><link rel="stylesheet" type="text/css" href="https://static-basket-02.wbbasket.ru/vol20/portal-search-nano-front/v1.0.9/index.e6f2ef5e4b94830e32cb.css" crossorigin="anonymous"><link rel="stylesheet" type="text/css" href="https://static-basket-02.wbbasket.ru/vol20/portal-search-nano-front/v1.0.9/index.d50ac0e5feeb48cdaf21.css" crossorigin="anonymous"></head>
+
+  <body class="rt-0-mode-base rt-0-scheme-ritm rt-0-theme-light rt-0-achr-non-inverted rt-0-primitive-normal rt-0-use-primary rt-0-typescale-base rt-0-typography-scheme-primary rt-0-operator-ritm" style="background: rgb(247, 247, 250);">
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"><div class="layout-view_LayoutView__gUTaL"><header class="HeaderView__container"><div class="header-view_HeaderView__background-container__8ecD1"></div></header><div class="app_Content__preview-container__PDblc"><div class="content-preview_Preview__uLeg+"><div class="content-preview_Preview__content-container__fP-x4"><div class="preview_Preview__0lyLx"><div class="home-page-preview_HomePagePreview__Ki6MP"><div class="home-page-preview_HomePagePreview__slider-info__4HYLe"><div class="slider-info-cards-skeleton_Slider-info-cards-skeleton__Y64E7"><div class="slider-info-cards-skeleton_Slider-info-cards-skeleton__line__kqXYT"></div><div class="slider-info-cards-skeleton_Slider-info-cards-skeleton__line__kqXYT"></div></div></div><ul class="home-page-preview_HomePagePreview__cards__GIL4a"><li class="home-page-preview_HomePagePreview__cards-item__aYsMi home-page-preview_HomePagePreview__cards-item--col-size-2__NN3WK"><div class="home-page-preview_HomePagePreview__skeleton__229MQ HomePagePreview__skeleton--full-height"><div class="skeleton_Skeleton__wEYMO"><div class="skeleton_Skeleton__header-line-container__XZuyx"><div class="skeleton_Skeleton__line__Q1rF2 skeleton_Skeleton__line--header-line--short__IZW5p"></div></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2 skeleton_Skeleton__line--short__ItLeb"></div></div></div></li><li class="home-page-preview_HomePagePreview__cards-item__aYsMi home-page-preview_HomePagePreview__cards-item--col-size-1__SAqO3"><div class="home-page-preview_HomePagePreview__skeleton__229MQ HomePagePreview__skeleton--full-height"><div class="skeleton_Skeleton__wEYMO"><div class="skeleton_Skeleton__header-line-container__XZuyx"><div class="skeleton_Skeleton__line__Q1rF2 skeleton_Skeleton__line--header-line--short__IZW5p"></div></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2 skeleton_Skeleton__line--short__ItLeb"></div></div></div></li><li class="home-page-preview_HomePagePreview__cards-item__aYsMi home-page-preview_HomePagePreview__cards-item--col-size-1__SAqO3"><div class="home-page-preview_HomePagePreview__skeleton__229MQ HomePagePreview__skeleton--full-height"><div class="skeleton_Skeleton__wEYMO"><div class="skeleton_Skeleton__header-line-container__XZuyx"><div class="skeleton_Skeleton__line__Q1rF2 skeleton_Skeleton__line--header-line--short__IZW5p"></div></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2 skeleton_Skeleton__line--short__ItLeb"></div></div></div></li><li class="home-page-preview_HomePagePreview__cards-item__aYsMi home-page-preview_HomePagePreview__cards-item--col-size-1__SAqO3"><div class="home-page-preview_HomePagePreview__skeleton__229MQ HomePagePreview__skeleton--full-height"><div class="skeleton_Skeleton__wEYMO"><div class="skeleton_Skeleton__header-line-container__XZuyx"><div class="skeleton_Skeleton__line__Q1rF2 skeleton_Skeleton__line--header-line--short__IZW5p"></div></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2 skeleton_Skeleton__line--short__ItLeb"></div></div></div></li><li class="home-page-preview_HomePagePreview__cards-item__aYsMi home-page-preview_HomePagePreview__cards-item--col-size-1__SAqO3"><div class="home-page-preview_HomePagePreview__skeleton__229MQ HomePagePreview__skeleton--full-height"><div class="skeleton_Skeleton__wEYMO"><div class="skeleton_Skeleton__header-line-container__XZuyx"><div class="skeleton_Skeleton__line__Q1rF2 skeleton_Skeleton__line--header-line--short__IZW5p"></div></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2 skeleton_Skeleton__line--short__ItLeb"></div></div></div></li><li class="home-page-preview_HomePagePreview__cards-item__aYsMi home-page-preview_HomePagePreview__cards-item--col-size-2__NN3WK"><div class="home-page-preview_HomePagePreview__skeleton__229MQ HomePagePreview__skeleton--full-height"><div class="skeleton_Skeleton__wEYMO"><div class="skeleton_Skeleton__header-line-container__XZuyx"><div class="skeleton_Skeleton__line__Q1rF2 skeleton_Skeleton__line--header-line--short__IZW5p"></div></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2"></div><div class="skeleton_Skeleton__line__Q1rF2 skeleton_Skeleton__line--short__ItLeb"></div></div></div></li></ul></div></div></div></div></div><div class="footer-view_FooterView__SRyig" data-testid="footer-container"><div class="footer-view_FooterView__content__3IfG-"><div class="footer-view_FooterView__menu__MtS9s" data-testid="main-footer-menu"><div><div class="menu-list_MenuList__sHb3s" style="display: flex; flex-direction: row; place-content: stretch center; box-sizing: border-box; width: 100%; gap: 10px;"><div style="display: flex; flex-direction: column; place-content: stretch flex-start; flex: 1 1 0%; width: 0px; gap: 10px;"><div style="display: flex; justify-content: stretch;"><div class="menu-list_MenuList__item__3tX7+"><a class="button-link_Button-link__gXpYv button-link_Button-link--text-left__SMba6 button-link_Button-link--button__fvPXh button-link_Button-link--footer-link__nfVo8 button-link_Button-link--button-big__oZekV" data-testid="footer-menu-item-menu.finances-reports-button-link" href="/suppliers-mutual-settlements"><span class="Button-link__text" data-testid="text">Финансовые отчёты</span></a></div></div><div style="display: flex; justify-content: stretch;"><div class="menu-list_MenuList__item__3tX7+"><button class="button-link_Button-link__gXpYv button-link_Button-link--text-left__SMba6 button-link_Button-link--button__fvPXh button-link_Button-link--footer-link__nfVo8 button-link_Button-link--button-big__oZekV" data-testid="footer-menu-item-menu.wb-guru-button-link" type="button"><span class="Button-link__text" data-testid="text">WBGuru</span></button></div></div><div style="display: flex; justify-content: stretch;"><div class="menu-list_MenuList__item__3tX7+"><button class="button-link_Button-link__gXpYv button-link_Button-link--text-left__SMba6 button-link_Button-link--button__fvPXh button-link_Button-link--footer-link__nfVo8 button-link_Button-link--button-big__oZekV" data-testid="footer-menu-item-menu.personal-data-footer-button-link" type="button"><span class="Button-link__text" data-testid="text">Политика обработки персональных данных</span></button></div></div></div><div style="display: flex; flex-direction: column; place-content: stretch flex-start; flex: 1 1 0%; width: 0px; gap: 10px;"><div style="display: flex; justify-content: stretch;"><div class="menu-list_MenuList__item__3tX7+"><a class="button-link_Button-link__gXpYv button-link_Button-link--text-left__SMba6 button-link_Button-link--button__fvPXh button-link_Button-link--footer-link__nfVo8 button-link_Button-link--button-big__oZekV" data-testid="footer-menu-item-menu.payment-history-button-link" href="/payment-history"><span class="Button-link__text" data-testid="text">История платежей</span></a></div></div><div style="display: flex; justify-content: stretch;"><div class="menu-list_MenuList__item__3tX7+"><a class="button-link_Button-link__gXpYv button-link_Button-link--text-left__SMba6 button-link_Button-link--button__fvPXh button-link_Button-link--footer-link__nfVo8 button-link_Button-link--button-big__oZekV" data-testid="footer-menu-item-menu.auth-service-button-link" href="/auth-services"><span class="Button-link__text" data-testid="text">Каталог решений для бизнеса</span></a></div></div><div style="display: flex; justify-content: stretch;"><div class="menu-list_MenuList__item__3tX7+"><button class="button-link_Button-link__gXpYv button-link_Button-link--text-left__SMba6 button-link_Button-link--button__fvPXh button-link_Button-link--footer-link__nfVo8 button-link_Button-link--button-big__oZekV" data-testid="footer-menu-item-menu.wb-bank-individual-service-button-link" type="button"><span class="Button-link__text" data-testid="text">WB Банк для бизнеса</span></button></div></div></div><div style="display: flex; flex-direction: column; place-content: stretch flex-start; flex: 1 1 0%; width: 0px; gap: 10px;"><div style="display: flex; justify-content: stretch;"><div class="menu-list_MenuList__item__3tX7+"><a class="button-link_Button-link__gXpYv button-link_Button-link--text-left__SMba6 button-link_Button-link--button__fvPXh button-link_Button-link--footer-link__nfVo8 button-link_Button-link--button-big__oZekV" data-testid="footer-menu-item-menu.news-page-button-link" href="/news-v2"><span class="Button-link__text" data-testid="text">Новости</span></a></div></div><div style="display: flex; justify-content: stretch;"><div class="menu-list_MenuList__item__3tX7+"><button class="button-link_Button-link__gXpYv button-link_Button-link--text-left__SMba6 button-link_Button-link--button__fvPXh button-link_Button-link--footer-link__nfVo8 button-link_Button-link--button-big__oZekV" data-testid="footer-menu-item-menu.digital-services-button-link" type="button"><span class="Button-link__text" data-testid="text">Цифровые товары</span></button></div></div><div style="display: flex; justify-content: stretch;"><div class="menu-list_MenuList__item__3tX7+"><button class="button-link_Button-link__gXpYv button-link_Button-link--text-left__SMba6 button-link_Button-link--button__fvPXh button-link_Button-link--footer-link__nfVo8 button-link_Button-link--button-big__oZekV" data-testid="footer-menu-item-menu.business-button-link" type="button"><span class="Button-link__text" data-testid="text">Товары для бизнеса</span></button></div></div></div><div style="display: flex; flex-direction: column; place-content: stretch flex-start; flex: 1 1 0%; width: 0px; gap: 10px;"><div style="display: flex; justify-content: stretch;"><div class="menu-list_MenuList__item__3tX7+"><button class="button-link_Button-link__gXpYv button-link_Button-link--text-left__SMba6 button-link_Button-link--button__fvPXh button-link_Button-link--footer-link__nfVo8 button-link_Button-link--button-big__oZekV" data-testid="footer-menu-item-menu.employment-button-link" type="button"><span class="Button-link__text" data-testid="text">Трудоустройство</span></button></div></div><div style="display: flex; justify-content: stretch;"><div class="menu-list_MenuList__item__3tX7+"><button class="button-link_Button-link__gXpYv button-link_Button-link--text-left__SMba6 button-link_Button-link--button__fvPXh button-link_Button-link--footer-link__nfVo8 button-link_Button-link--button-big__oZekV" data-testid="footer-menu-item-menu.auth-service-ad-button-link" type="button"><span class="Button-link__text" data-testid="text">Сертифицированные агентства</span></button></div></div><div style="display: flex; justify-content: stretch;"><div class="menu-list_MenuList__item__3tX7+"><button class="button-link_Button-link__gXpYv button-link_Button-link--text-left__SMba6 button-link_Button-link--button__fvPXh button-link_Button-link--footer-link__nfVo8 button-link_Button-link--button-big__oZekV" data-testid="footer-menu-item-menu.telegram-official-button-link" type="button"><span class="Button-link__text" data-testid="text">Телеграм-канал</span></button></div></div></div></div></div></div></div><div class="footer-view_FooterView__footer__dn3uJ" data-testid="additional-footer-menu"><div class="additional-footer_AdditionalFooter__zaA56"><div class="additional-footer_AdditionalFooter__content__TwDjt"><div class="additional-footer_AdditionalFooter__copyright__2go17"><div class="additional-footer_AdditionalFooter__texts__KaxlF"><span class="text_Text__CfKFk text_Text--body-s__MXH6r text_Text--normalGrey__UslXT text_Text--white-space-pre-wrap__7rxTU text_Text--textDecoration-none__XVJsH" data-name="Text">2004-2026 Copyright © WB Partners. </span><span class="text_Text__CfKFk text_Text--body-s__MXH6r text_Text--normalGrey__UslXT text_Text--white-space-pre-wrap__7rxTU text_Text--textDecoration-none__XVJsH" data-name="Text">Все права защищены.</span></div></div><div class="additional-footer_AdditionalFooter__locale__050c6"><div class="language-select-view_LanguageSelect__svgvC"><button class="select-input_SelectInput__thDwf" data-testid="footer-language-select-button" type="button"><span class="select-input_SelectInput__value__S0eS9"><img alt="locale-Русский" class="select-input_SelectInput__locale-icon__ZM1bI" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIj4KICA8ZyBjbGlwLXBhdGg9InVybCgjY2xpcDBfMTg5Nl81NDgwMSkiPgogICAgPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0wIDBIMjRWOEgwVjBaIiBmaWxsPSJ3aGl0ZSIvPgogICAgPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0wIDhIMjRWMTZIMFY4WiIgZmlsbD0iIzAwMzlBNiIvPgogICAgPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0tNCAxNkgyOVYyNEgtNFYxNloiIGZpbGw9IiNENTJCMUUiLz4KICA8L2c+CiAgPHJlY3QgeD0iMC4yNSIgeT0iMC4yNSIgd2lkdGg9IjIzLjUiIGhlaWdodD0iMjMuNSIgcng9IjExLjc1IiBzdHJva2U9IiNEMUNGRDciIHN0cm9rZS13aWR0aD0iMC41Ii8+CiAgPGRlZnM+CiAgICA8Y2xpcFBhdGggaWQ9ImNsaXAwXzE4OTZfNTQ4MDEiPgogICAgICA8cmVjdCB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHJ4PSIxMiIgZmlsbD0id2hpdGUiLz4KICAgIDwvY2xpcFBhdGg+CiAgPC9kZWZzPgo8L3N2Zz4K"><span class="select-input_SelectInput__text__wFv4N"><span class="text_Text__CfKFk text_Text--body-s__MXH6r text_Text--normalGrey__UslXT text_Text--textDecoration-none__XVJsH" data-name="Text">Русский</span></span></span><span class="select-input_SelectInput__arrow-icon__zKQwh"><span class="input-icon_InputIcon__mj4MW"><svg fill="none" height="12" viewBox="-3 -7 24 24" width="12" xmlns="http://www.w3.org/2000/svg"><path clip-rule="evenodd" d="M16.293 0.292969L17.7072 1.70718L9.00008 10.4143L0.292969 1.70718L1.70718 0.292969L9.00008 7.58586L16.293 0.292969Z" fill="#4e4e53" fill-rule="evenodd"></path></svg></span></span></button></div></div></div></div></div></div></div></div>
+    <div id="portal"></div>
+  <script src="https://static-basket-02.wbbasket.ru/vol20/root-monorepo/latest/runtime.6f80450771c0ad7d.js" type="module"></script><script src="https://static-basket-02.wbbasket.ru/vol20/root-monorepo/latest/vendor.69be85166d7a453e.js" type="module"></script><script src="https://static-basket-02.wbbasket.ru/vol20/root-monorepo/latest/main.a063790fd304996c.js" type="module"></script>
+
+<script src="https://static-basket-02.wbbasket.ru/vol20/sec/facct/622dcf80-a907-11f0-be8c-b3c1580000001.js" async=""></script><div id="Portal-quiz-modal" class="Portal-quiz-modal" style="z-index: 99; position: relative;"><div class="Portal-quiz-modal__mnzlqts7"></div></div><div id="Portal-notifications" class="Portal-notifications" style="z-index: 100; position: relative;"><div class="Portal-notifications__mnzlqtun"><div class="Notifications-modals-container"></div></div></div><div id="Portal-modal" class="Portal-modal" style="z-index: 99; position: relative;"><div class="Portal-modal__mnzlqtuo"></div></div><div id="Portal-pwa-modal" class="Portal-pwa-modal" style="z-index: 99; position: relative;"><div class="Portal-pwa-modal__mnzlqtup"></div></div><div id="Portal-header" class="Portal-header" style="z-index: 80; position: relative;"><div class="Portal-header__mnzlqtur"><div class="header-view_HeaderView__xcjQe" data-testid="header-view"><div class="KsnyjtuG79" data-page="banner-page"></div><div class="header-items-block_HeaderItemsBlock__fxtwF"><div class="menu-in-portal-banners_MenuInPortalBannersView__5ttoX"></div><div class="header-items-block_HeaderItemsBlock__mobile-menu-container__6i6EI"><div class="mobile-menu-view_MobileMenuView__xw6gv"><button class="button-interface_button__-OCMe button-interface_s__z+Hmt button-interface_onlyIcon__XsvzF" type="button"><svg fill="none" height="24" viewBox="-2 -5 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path clip-rule="evenodd" d="M20 2V0H0V2H20ZM20 6V8H0V6H20ZM20 12V14H0V12H20Z" fill="currentColor" fill-rule="evenodd"></path></svg></button></div></div><div class="header-items-block_HeaderItemsBlock__menu-container__-X4Kg"><div class="header-items-block_HeaderItemsBlock__logo__tRwOH"><a class="logo_Logo__PlzzM" data-testid="header-logo-link" href="/"><img alt="logo" class="src_PortalLogo__cD+wo" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTM4IiBoZWlnaHQ9IjM2IiB2aWV3Qm94PSIwIDAgMTM4IDM2IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8ZyBjbGlwLXBhdGg9InVybCgjY2xpcDBfMjYyOF8zMjg1OSkiPgo8cGF0aCBkPSJNNC41MjI2MiAyNS4xMDQ2TDAuMDUzMjIyNyAxMy40MDQ2SDMuMDQ4NDJMNS42OTI2MiAyMC4xNjcyTDguMzEzNDIgMTMuNDA0NkgxMC4xMTUyTDEyLjc4MjggMjAuMjE0TDE1LjQyNyAxMy40MDQ2SDE4LjI4MThMMTMuODEyNCAyNS4xMDQ2SDExLjkxN0w5LjE3OTIyIDE4LjA4NDZMNi40MTgwMiAyNS4xMDQ2SDQuNTIyNjJaIiBmaWxsPSIjN0YzMEUzIi8+CjxwYXRoIGQ9Ik0yNS4zMDg4IDI1LjUwMjRDMjEuOTM5MiAyNS41MDI0IDE5LjAzNzYgMjIuNzE3OCAxOS4wMzc2IDE5LjIwNzhWNy43ODg1N0gyMS44MjIyVjE0LjY2ODJDMjIuNjg4IDEzLjY2MiAyNC4wNjg2IDEyLjk4MzQgMjUuNzA2NiAxMi45ODM0QzI4Ljk1OTIgMTIuOTgzNCAzMS42OTcgMTUuNzY4IDMxLjY5NyAxOS4yMDc4QzMxLjY5NyAyMi43MTc4IDI4Ljc5NTQgMjUuNTAyNCAyNS4zMDg4IDI1LjUwMjRaTTI1LjMwODggMjIuNzE3OEMyNy4yNTEgMjIuNzE3OCAyOC45MzU4IDIxLjIyMDIgMjguOTM1OCAxOS4yMDc4QzI4LjkzNTggMTcuMjg5IDI3LjMyMTIgMTUuNzIxMiAyNS4zNzkgMTUuNzIxMkMyMy4zOSAxNS43MjEyIDIxLjgyMjIgMTcuMjg5IDIxLjgyMjIgMTkuMjA3OEMyMS44MjIyIDIxLjIyMDIgMjMuNDgzNiAyMi43MTc4IDI1LjMwODggMjIuNzE3OFoiIGZpbGw9IiM3RjMwRTMiLz4KPHBhdGggZD0iTTYzLjM0OTIgMTQuNTUxQzYyLjM4NjggMTMuNTU0NiA2MS4wODExIDEyLjkxODUgNTkuNSAxMi45MTg1QzU1LjkyNTcgMTIuOTE4NSA1My40MDAxIDE1LjcwMjEgNTMuNDAwMSAxOS4xNTU4QzUzLjQwMDEgMjIuNjQzOCA1NS45MjU3IDI1LjM5MyA1OS41IDI1LjM5M0M2MS4wODA3IDI1LjM5MyA2Mi40MDM5IDI0Ljc5MTcgNjMuMzQ5MiAyMy44MjkzVjI0Ljk5NzhINjYuMTMyOFYxMy4zMTMzSDYzLjM0OTJWMTQuNTUxWk01OS43NzQ5IDIyLjcxM0M1Ny44MzMxIDIyLjcxMyA1Ni4yMTgxIDIxLjIwMDggNTYuMjE4MSAxOS4xNTYxQzU2LjIxODEgMTcuMTI4NSA1Ny44MzMxIDE1LjYzMzcgNTkuNzc0OSAxNS42MzM3QzYxLjY5OTQgMTUuNjMzNyA2My4zNDkyIDE3LjE3OTkgNjMuMzQ5MiAxOS4xNTYxQzYzLjM0OTIgMjEuMTMyNCA2MS42ODIzIDIyLjcxMyA1OS43NzQ5IDIyLjcxM1oiIGZpbGw9ImJsYWNrIi8+CjxwYXRoIGQ9Ik03MC4xODc3IDE1LjkyNlYxMy4zMTQxSDY3LjQzODZWMjQuOTk4Nkg3MC4xODc3VjE5Ljk0NjlDNzAuMTg3NyAxNy42MDk5IDcyLjY5NjQgMTYuMTgzOSA3NS4yMzk0IDE2LjE4MzlWMTMuMzE0NUg3NC45MzAxQzcyLjgzMzYgMTMuMzE0NSA3MS4zMzg4IDE0LjEzOTIgNzAuMTg3MyAxNS45MjY0TDcwLjE4NzcgMTUuOTI2WiIgZmlsbD0iYmxhY2siLz4KPHBhdGggZD0iTTQ2LjI2OTMgMTIuOTAxNUM0Mi45MDExIDEyLjkwMTUgNDAuMDE0NiAxNS42ODUxIDQwLjAxNDYgMTkuMTkwNlYzMC42MDAxSDQyLjc5ODJWMjQuMjk0MUM0My44OTc5IDI0Ljk2NDIgNDUuMDE0OSAyNS40MTExIDQ2LjQyMzYgMjUuNDExMUM0OS45MTE2IDI1LjQxMTEgNTIuNjYwOCAyMi42MTAyIDUyLjY2MDggMTkuMTczOUM1Mi42NDM4IDE1LjY2ODUgNDkuNzM5OSAxMi45MDIzIDQ2LjI2ODkgMTIuOTAyM0w0Ni4yNjkzIDEyLjkwMTVaTTQ2LjQwNjkgMjIuNjA5OEM0NC4zMTA0IDIyLjYwOTggNDIuNzgxMiAyMS4wOTc2IDQyLjc4MTIgMTkuMTczMkM0Mi43ODEyIDE3LjE2MjkgNDQuNDQ4MSAxNS42Njc3IDQ2LjI2OTMgMTUuNjY3N0M0OC4yMTExIDE1LjY2NzcgNDkuODk0NiAxNy4xNjI1IDQ5Ljg5NDYgMTkuMTczMkM0OS44Nzc2IDIxLjA5NzYgNDguMzQ4NyAyMi42MDk4IDQ2LjQwNjkgMjIuNjA5OFoiIGZpbGw9ImJsYWNrIi8+CjxwYXRoIGQ9Ik0xMTUuMjc2IDE1LjkyNlYxMy4zMTQxSDExMi41MjZWMjQuOTk4NkgxMTUuMjc2VjE5Ljk0NjlDMTE1LjI3NiAxNy42MDk5IDExNy43ODQgMTYuMTgzOSAxMjAuMzI4IDE2LjE4MzlWMTMuMzE0NUgxMjAuMDE4QzExNy45MjIgMTMuMzE0NSAxMTYuNDI3IDE0LjEzODggMTE1LjI3NiAxNS45MjZaIiBmaWxsPSJibGFjayIvPgo8cGF0aCBkPSJNOTMuNjI1MiAxMi44NjcxQzkyLjE0NzMgMTIuODY3MSA5MC45NjE4IDEzLjUzNzIgOTAuMTAyNyAxNC4zNjE5VjEzLjMxMzdIODcuMzE5MVYyMi4yMTQzSDgxLjMzOThWMTUuODU2OEg4NS45NjE5VjEzLjMxMzdIODEuMzM5OFY4LjY0MDE0SDc4LjU1NjJWMTMuMzEzN0g3Ni4wODE2VjE1Ljg1NjhINzguNTU2MlYyMi4yMTQzQzc4LjU1NjIgMjMuNTg4OCA3OS4zOTgzIDI0Ljk5NzggODEuMzM5OCAyNC45OTc4SDkwLjEwMzFWMTkuMTcyOEM5MC4xMDMxIDE3LjA3NjMgOTEuNTEyIDE1LjU5ODkgOTMuMjk5MiAxNS41OTg5Qzk0Ljc5NCAxNS41OTg5IDk1LjgwNzggMTYuNTA5NSA5NS44MDc4IDE4LjU3MTVWMjQuOTk3OEg5OC42NjAyVjE4LjU3MTVDOTguNjQyOCAxNS42Njc3IDk3LjQwNTkgMTIuODY2NyA5My42MjU1IDEyLjg2NjdMOTMuNjI1MiAxMi44NjcxWiIgZmlsbD0iYmxhY2siLz4KPHBhdGggZD0iTTEyNi43MzcgMTcuNzQ3MkMxMjUuMzI4IDE3LjYwOTUgMTI0LjI2MyAxNy40ODkzIDEyNC4yNjMgMTYuNzY3N0MxMjQuMjYzIDE1LjkyNiAxMjUuMjI1IDE1LjM1ODggMTI2LjQ3OSAxNS4zNTg4QzEyNy44ODggMTUuMzU4OCAxMjkuMjI4IDE2LjA2MzIgMTMwLjIyNSAxNy4wNDI3TDEzMS45MDkgMTQuOTQ2MkMxMzAuMjI1IDEzLjU4ODYgMTI4LjcxMyAxMi44NjcxIDEyNi42IDEyLjg2NzFDMTI0LjEyNSAxMi44NjcxIDEyMS40NjIgMTMuOTg0MiAxMjEuNDYyIDE2Ljc2NzdDMTIxLjQ2MiAxOS45NDY1IDEyNC4yNjMgMjAuMjU1OCAxMjYuNiAyMC4zOTM1QzEyNy44ODggMjAuNTMwNyAxMjguOTU0IDIwLjY2ODQgMTI4Ljk1NCAyMS40OTMxQzEyOC45NTQgMjIuMzM1MyAxMjcuNzM0IDIyLjczMDQgMTI2LjYgMjIuNzMwNEMxMjUuMjI1IDIyLjczMDQgMTIzLjgxNiAyMi4xOTc2IDEyMi42OTkgMjAuOTI2M0wxMjAuODk1IDIyLjkxOTVDMTIyLjQ0MSAyNC41NTIgMTI0LjUzOCAyNS4zOTM4IDEyNi40OCAyNS4zOTM4QzEyOC45NTQgMjUuMzkzOCAxMzEuNzM4IDI0LjE1NjQgMTMxLjczOCAyMS4zNzI5QzEzMS43MzggMTguMjYzIDEyOC45NTQgMTguMDM5NSAxMjYuNzM3IDE3Ljc0NzJIMTI2LjczN1oiIGZpbGw9ImJsYWNrIi8+CjxwYXRoIGQ9Ik0xMDUuNzU3IDEyLjg2NzVDMTAyLjI2OSAxMi44Njc1IDk5LjUwMiAxNS40Nzk0IDk5LjUwMiAxOC45ODQ1Qzk5LjUwMiAyMi40ODk2IDEwMS45NzcgMjUuMzkzOCAxMDUuNTg1IDI1LjM5MzhDMTA3Ljg1MyAyNS4zOTM4IDEwOS42NzQgMjQuMjk0MSAxMTAuOTEyIDIyLjQ3MjVMMTA4LjY2IDIwLjgwNTZDMTA3Ljk5IDIxLjg4ODMgMTA2Ljg1NiAyMi42MDk4IDEwNS41NjggMjIuNjA5OEMxMDQuMDczIDIyLjYwOTggMTAyLjU2MSAyMS40OTI3IDEwMi40MDYgMTkuODI2MkgxMTEuNDQ0VjE4Ljk4NDFDMTExLjQ2MiAxNS4zNzU4IDEwOS4wNzMgMTIuODY3MSAxMDUuNzU3IDEyLjg2NzFMMTA1Ljc1NyAxMi44Njc1Wk0xMDIuNzE1IDE3LjQ4OTZDMTAzLjIzMSAxNi4zMjExIDEwNC4yMSAxNS42NjgxIDEwNS41NjggMTUuNjY4MUMxMDcuMTMxIDE1LjY2ODEgMTA3Ljk3MyAxNi4zMjExIDEwOC40MiAxNy40ODk2SDEwMi43MTVaIiBmaWxsPSJibGFjayIvPgo8L2c+CjxkZWZzPgo8Y2xpcFBhdGggaWQ9ImNsaXAwXzI2MjhfMzI4NTkiPgo8cmVjdCB3aWR0aD0iMTM4IiBoZWlnaHQ9IjM2IiBmaWxsPSJ3aGl0ZSIvPgo8L2NsaXBQYXRoPgo8L2RlZnM+Cjwvc3ZnPgo="></a></div><div class="header-items-block_HeaderItemsBlock__menu-list__byp20"><div class="HiddenMeasureMenuList"><ul class="hidden-measure-menu-list_HiddenMeasureMenuList__list__uaI1c"></ul></div><div class="menu-list_MenuList__eZZN-"><ul class="menu-list_MenuList__list__Rat2D" data-testid="desktop-menu-list"></ul><div class="menu-list_MenuList__dropdown-container__4xkGy" style="max-width: 48px; inset-inline-start: 0px;"></div></div></div></div><div class="header-items-block_HeaderItemsBlock__profile__j+jCJ"><div class="header-items-block_HeaderItemsBlock__profile-icons-wrapper__BdgfE"><div class="header-items-block_HeaderItemsBlock__profile-icons__Q9YQE"><span class="header-items-block_HeaderItemsBlock__profile-search__4kShV"></span><span class="header-items-block_HeaderItemsBlock__profile-notifications__3xDKr"></span><span class="header-items-block_HeaderItemsBlock__profile-info__GWs3A"><div class="appeal-notification-view_Appeal-notification-view__upWtS"><div class="notification-view_Notification-view__Dw2Lk"><button class="button-interface_button__-OCMe button-interface_s__z+Hmt button-interface_onlyIcon__XsvzF" type="button" data-testid="menu-icon-support-button-interface"><div class="new-support-icon_NewSupportIcon__t566F"><div class="RT-Icon RT-Icon__size-sm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"><path d="M8.53612 8.23121C8.93741 6.62606 10.3796 5.5 12.0342 5.5H12.2666C13.7389 5.5 15.0329 6.47604 15.4374 7.89174C15.8733 9.41758 15.1607 11.0375 13.7413 11.7472L12.4469 12.3944C11.9529 12.6414 11.3523 12.4412 11.1053 11.9472C10.8583 11.4532 11.0585 10.8526 11.5525 10.6056L12.8469 9.95837C13.4054 9.6791 13.6859 9.04162 13.5143 8.44118C13.3551 7.88409 12.8459 7.5 12.2666 7.5H12.0342C11.2974 7.5 10.6551 8.00147 10.4764 8.71628L10.4698 8.74254C10.3359 9.27833 9.79296 9.60409 9.25717 9.47014C8.72137 9.33619 8.39561 8.79326 8.52956 8.25746L8.53612 8.23121Z" fill="currentColor"></path><path d="M11.9997 13.5C11.1713 13.5 10.4997 14.1716 10.4997 15C10.4997 15.8284 11.1713 16.5 11.9997 16.5H12.0097C12.8381 16.5 13.5097 15.8284 13.5097 15C13.5097 14.1716 12.8381 13.5 12.0097 13.5H11.9997Z" fill="currentColor"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M6.76006 2H17.2393C18.1212 1.99999 18.846 1.99998 19.4321 2.04969C20.0383 2.10111 20.5946 2.21151 21.1064 2.49186C21.8952 2.9239 22.5153 3.60912 22.8667 4.43691C23.0947 4.97406 23.1492 5.53863 23.1401 6.14697C23.1312 6.73512 23.0591 7.45622 22.9713 8.33371L22.4231 13.8159C22.3501 14.5465 22.2895 15.1518 22.2011 15.6444C22.1089 16.1578 21.9745 16.6256 21.7135 17.06C21.3065 17.7374 20.7079 18.2791 19.9933 18.6167C19.5351 18.8332 19.0562 18.9204 18.5362 18.961C18.0373 19 17.429 19 16.6948 19H15.2934L8.78698 23.1827L8.77955 23.1875C8.75014 23.2065 8.68141 23.251 8.61343 23.2863C8.54663 23.3211 8.32291 23.4356 8.02134 23.414C7.70307 23.3913 7.41036 23.2315 7.21913 22.9761C7.03794 22.734 7.01325 22.484 7.00637 22.409C6.99938 22.3326 6.99959 22.2508 6.99969 22.2157L6.9997 22.2069V18.9999C6.40003 18.9992 5.89131 18.9945 5.4632 18.961C4.94317 18.9204 4.46428 18.8332 4.00607 18.6167C3.29148 18.2791 2.69291 17.7374 2.2859 17.06C2.02492 16.6256 1.89051 16.1578 1.79832 15.6444C1.70987 15.1518 1.64935 14.5464 1.5763 13.8158L1.02809 8.33376C0.940326 7.45624 0.868203 6.73513 0.859349 6.14697C0.850191 5.53863 0.904682 4.97406 1.13272 4.43691C1.48414 3.60912 2.10425 2.9239 2.89296 2.49186C3.40476 2.21151 3.9611 2.10111 4.56733 2.04969C5.15345 1.99998 5.87817 1.99999 6.76006 2ZM4.73636 4.04254C4.25529 4.08334 4.01545 4.15739 3.85382 4.24593C3.45946 4.46195 3.1494 4.80456 2.97369 5.21846C2.90167 5.3881 2.85186 5.63412 2.85912 6.11686C2.86655 6.61012 2.92934 7.24652 3.0225 8.17812L3.5625 13.5781C3.64041 14.3572 3.69384 14.8844 3.76683 15.2909C3.83764 15.6852 3.9147 15.8875 4.00028 16.03C4.20379 16.3687 4.50307 16.6396 4.86037 16.8084C5.01063 16.8794 5.21964 16.9359 5.61905 16.9671C6.03079 16.9993 6.5607 17 7.34364 17H7.8397L7.84362 17C7.8624 16.9999 7.92542 16.9997 7.98681 17.0047C8.06533 17.0111 8.22393 17.0306 8.39909 17.1199C8.60607 17.2254 8.77435 17.3936 8.87981 17.6006C8.96906 17.7758 8.98861 17.9344 8.99502 18.0129C9.00003 18.0743 8.99979 18.1373 8.99971 18.1561L8.9997 18.16V20.6683L14.4194 17.1842C14.4238 17.1814 14.4448 17.1679 14.4656 17.1554C14.494 17.1385 14.5405 17.1123 14.6008 17.0868C14.678 17.0541 14.7588 17.0304 14.8415 17.0161C14.9059 17.005 14.9592 17.0019 14.9922 17.0008C15.0165 16.9999 15.0407 17 15.0459 17L16.6558 17C17.4387 17 17.9686 16.9993 18.3804 16.9671C18.7798 16.9359 18.9888 16.8794 19.139 16.8084C19.4963 16.6396 19.7956 16.3687 19.9991 16.03C20.0847 15.8875 20.1618 15.6852 20.2326 15.2909C20.3056 14.8844 20.359 14.3572 20.4369 13.5781L20.9769 8.17812C21.0701 7.24651 21.1329 6.61012 21.1403 6.11686C21.1476 5.63412 21.0977 5.3881 21.0257 5.21846C20.85 4.80456 20.5399 4.46195 20.1456 4.24593C19.984 4.15739 19.7441 4.08334 19.263 4.04254C18.7715 4.00084 18.132 4 17.1958 4H6.80364C5.86739 4 5.22791 4.00084 4.73636 4.04254Z" fill="currentColor"></path></svg></div></div></button><div class="notification-view_Notification-view__counter__DMwzK notification-view_Notification-view__counter--is-new-menu__OfArF" data-testid="menu-icon-support-button-counter"></div></div></div></span></div></div><span class="header-items-block_HeaderItemsBlock__profile-select__PZitv"><div class="ProfileView"><div class="profile-view_ProfileView__button--desktop__fK+ky"><div class="desktop-profile-select_DesktopProfileSelect__xVw6d"><button class="chips_Chips__cXjGT chips_Chips--l__+9MAI chips_Chips--color-base-primary__cdhdD chips_Chips--color-base-primary-active__XigfX chips_Chips--trim__7ktrq chips_Chips--fullWidth__W17Ea Chips--semi chips_Chips--textWeight-bold__5s1wS" data-name="Chips" data-testid="desktop-profile-select-button-chips-component" type="button" style="background-color: rgba(74, 74, 89, 0.08); color: rgb(0, 0, 0);"><div class="chips_Chips__text__qZG82 chips_Chips__text--trim__B80rR chips_Chips__text--textAlign-center__ZIpUT">ООО "Компания АДК"</div><svg fill="none" height="24" viewBox="-3 -7 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path clip-rule="evenodd" d="M16.293 0.292969L17.7072 1.70718L9.00008 10.4143L0.292969 1.70718L1.70718 0.292969L9.00008 7.58586L16.293 0.292969Z" fill="currentColor" fill-rule="evenodd"></path></svg></button></div></div><span class="profile-view_ProfileView__button--mobile__CD3zn"><div class="profile-mobile-button_ProfileMobileButton__vUu2o"><button class="button-interface_button__-OCMe button-interface_s__z+Hmt button-interface_onlyIcon__XsvzF" type="button" data-testid="mobile-menu-icon-profile-button-button-interface"><svg fill="none" height="24" viewBox="-1 -1 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path clip-rule="evenodd" d="M11 22C4.92487 22 0 17.0751 0 11C0 4.92487 4.92487 0 11 0C17.0751 0 22 4.92487 22 11C22 17.0751 17.0751 22 11 22ZM18.3995 16.1246C19.4086 14.6703 20 12.9042 20 11C20 6.02944 15.9706 2 11 2C6.02944 2 2 6.02944 2 11C2 12.9042 2.59138 14.6703 3.6005 16.1246C4.72595 14.6381 7.3706 14 11 14C14.6294 14 17.274 14.6381 18.3995 16.1246ZM16.9647 17.7398C16.672 16.6874 14.5694 16 11 16C7.43062 16 5.328 16.6874 5.03532 17.7398C6.6233 19.1462 8.71194 20 11 20C13.2881 20 15.3767 19.1462 16.9647 17.7398ZM11 14C8.76086 14 7 12.4274 7 9C7 6.75576 8.5791 5 11 5C13.4142 5 15 6.92158 15 9.2C15 12.4796 13.2181 14 11 14ZM9 9C9 11.2693 9.81821 12 11 12C12.1777 12 13 11.2984 13 9.2C13 7.95042 12.2157 7 11 7C9.73374 7 9 7.81582 9 9Z" fill="currentColor" fill-rule="evenodd"></path></svg></button></div><div class="profile-mobile-button_ProfileMobileButton__overlay__vXWRI"></div></span></div></span></div></div></div></div></div><div id="Portal-mobile-menu" class="Portal-mobile-menu" style="z-index: 98; position: relative;"><div class="Portal-mobile-menu__mnzlqtuu"></div></div><div id="Portal-mobile-sub-menu" class="Portal-mobile-sub-menu" style="z-index: 98; position: relative;"><div class="Portal-mobile-sub-menu__mnzlqtuv"></div></div><div id="Portal-profile-mobile" class="Portal-profile-mobile" style="z-index: 99; position: relative;"><div class="Portal-profile-mobile__mnzlqtux"></div></div><div id="Portal-warning-cookies-modal" class="Portal-warning-cookies-modal" style="z-index: 99; position: relative;"><div class="Portal-warning-cookies-modal__mnzlqtuz"><div class="layout-view_LayoutView__warning__elvoJ"></div></div></div></body></html>

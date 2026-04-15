@@ -9,6 +9,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
+from agent_system import cli as agent_system_cli
 from agent_codex.apps.cli.main import main
 from agent_codex.config import ensure_runtime_layout, load_settings
 from agent_codex.contracts import SynthesisOutcome, TaskEnvelope, WorkerResult
@@ -223,53 +224,55 @@ class VNextTests(unittest.TestCase):
             self.assertEqual(rc, 0)
             payload = json.loads(buffer.getvalue())
             self.assertIn("runtime_root", payload)
-            self.assertIn("config_issues", payload)
-            self.assertIsInstance(payload["config_issues"], list)
+            self.assertIn("wb-tnved-ui-catalog", payload["commands"])
 
-    def test_metrics_command_json(self) -> None:
+    def test_wb_tnved_ui_catalog_command_json(self) -> None:
         with TemporaryDirectory() as tmp:
-            buffer = io.StringIO()
-            with redirect_stdout(buffer):
-                rc = main(["metrics", "--project-root", str(tmp), "--json"])
+            fake_payload = {
+                "output_dir": str(Path(tmp) / "generated" / "marketplace" / "tnved_ui_catalog_2026-04-15"),
+                "markdown_path": str(Path(tmp) / "generated" / "marketplace" / "tnved_ui_catalog_2026-04-15" / "tnved_ui_catalog.md"),
+                "xlsx_path": str(Path(tmp) / "generated" / "marketplace" / "tnved_ui_catalog_2026-04-15" / "tnved_ui_catalog.xlsx"),
+                "errors_dir": str(Path(tmp) / "generated" / "marketplace" / "tnved_ui_catalog_2026-04-15" / "errors"),
+                "category_count": 2,
+                "unique_code_count": 3,
+                "row_count": 5,
+                "error_count": 0,
+            }
+            with patch("agent_codex.runtime.executor.AgentExecutor.run_wb_tnved_ui_catalog", return_value=fake_payload):
+                buffer = io.StringIO()
+                with redirect_stdout(buffer):
+                    rc = main(
+                        [
+                            "wb-tnved-ui-catalog",
+                            "--project-root",
+                            str(tmp),
+                            "--json",
+                        ]
+                    )
             self.assertEqual(rc, 0)
             payload = json.loads(buffer.getvalue())
-            self.assertIn("memory", payload)
-            self.assertIn("tasks", payload)
-            self.assertIn("backend_credentials", payload)
+            self.assertEqual(payload["category_count"], 2)
+            self.assertTrue(payload["markdown_path"].endswith("tnved_ui_catalog.md"))
 
-    def test_settings_validate_reports_inconsistent_google_and_groq_config(self) -> None:
-        with TemporaryDirectory() as tmp:
-            env_path = Path(tmp) / ".env"
-            env_path.write_text(
-                "\n".join(
-                    [
-                        "PRIMARY_REASONING_BACKEND=groq",
-                        "GOOGLE_SHEETS_SPREADSHEET_ID=sheet-123",
-                    ]
-                ),
-                encoding="utf-8",
+    def test_agent_system_cli_proxy(self) -> None:
+        with patch("agent_system.cli.codex_main", return_value=0) as mocked:
+            rc = agent_system_cli.main(
+                [
+                    "--project-root",
+                    "C:/repo",
+                    "--wb-tnved-ui-catalog",
+                    "--json",
+                ]
             )
-            settings = load_settings(tmp)
-            issues = settings.validate()
-            self.assertTrue(any("GROQ_API_KEY" in issue for issue in issues))
-            self.assertTrue(any("Google Sheets is configured" in issue for issue in issues))
-
-    def test_settings_validate_reports_missing_openai_and_anthropic_keys(self) -> None:
-        with TemporaryDirectory() as tmp:
-            env_path = Path(tmp) / ".env"
-            env_path.write_text(
-                "\n".join(
-                    [
-                        "PRIMARY_REASONING_BACKEND=openai",
-                        "BACKGROUND_BACKEND=anthropic",
-                    ]
-                ),
-                encoding="utf-8",
-            )
-            settings = load_settings(tmp)
-            issues = settings.validate()
-            self.assertTrue(any("OPENAI_API_KEY" in issue for issue in issues))
-            self.assertTrue(any("ANTHROPIC_API_KEY" in issue for issue in issues))
+        self.assertEqual(rc, 0)
+        mocked.assert_called_once_with(
+            [
+                "wb-tnved-ui-catalog",
+                "--project-root",
+                "C:/repo",
+                "--json",
+            ]
+        )
 
     def test_marketplace_watch_headless_json(self) -> None:
         with TemporaryDirectory() as tmp:

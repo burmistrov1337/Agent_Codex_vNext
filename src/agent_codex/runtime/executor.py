@@ -4,7 +4,6 @@ import importlib
 import json
 import re
 from dataclasses import asdict
-from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
@@ -383,112 +382,15 @@ class AgentExecutor:
         )
         return envelope
 
-    def _execute_workers(
-        self,
-        *,
-        task_graph,
-        context: WorkerContext,
-        headless: bool,
-        attachments: list[TelegramAttachment] | None = None,
-        attachment_notes: list[str] | None = None,
-        attachment_limitations: list[str] | None = None,
-    ) -> list[WorkerResult]:
-        attachments = attachments or []
-        attachment_notes = attachment_notes or []
-        attachment_limitations = attachment_limitations or []
-        backend = select_backend(
-            self.settings.background_backend if headless else self.settings.primary_reasoning_backend,
-            groq_api_key=self.settings.groq_api_key,
-            groq_model=self.settings.groq_model,
-            openai_api_key=self.settings.openai_api_key,
-            openai_model=self.settings.openai_model,
-            anthropic_api_key=self.settings.anthropic_api_key,
-            anthropic_model=self.settings.anthropic_model,
-            ollama_base_url=self.settings.ollama_base_url,
-            ollama_model=self.settings.ollama_model,
-        )
-        evidence = [f"attachment:{item.local_path or item.file_name or item.file_id}" for item in attachments]
-        evidence.extend(attachment_notes[:3])
-        evidence.extend(f"limitation:{item}" for item in attachment_limitations[:2])
-
-        worker_results: list[WorkerResult] = []
-        for task in task_graph.tasks:
-            response = backend.run(task, context)
-            output = response.output
-            if attachment_notes:
-                output = output + "\n\nИзвлечённые заметки по вложениям:\n" + "\n".join(f"- {item}" for item in attachment_notes)
-            if attachment_limitations:
-                output = output + "\n\nОграничения:\n" + "\n".join(f"- {item}" for item in attachment_limitations)
-            worker_results.append(
-                WorkerResult(
-                    task_id=task.id,
-                    role=task.role,
-                    status="completed",
-                    summary=response.summary,
-                    output=output,
-                    evidence=evidence,
-                    gaps=list(response.gaps or []),
-                    follow_up_actions=list(response.follow_up_actions or []),
-                )
-            )
-        return worker_results
-
-    def _persist_run_envelope(self, envelope: RunEnvelope, artifact_dir: Path) -> Path:
-        envelope_path = artifact_dir / "run_envelope.json"
-        envelope_path.write_text(json.dumps(envelope.to_dict(), ensure_ascii=False, indent=2), encoding="utf-8")
-        return envelope_path
-
-    def _collect_attachment_notes(self, attachments: list[TelegramAttachment]) -> tuple[list[str], list[str]]:
-        notes: list[str] = []
-        limitations: list[str] = []
-        for item in attachments:
-            if not item.local_path:
-                limitations.append(f"Вложение {item.file_name or item.file_id} ещё не скачано в runtime inbox.")
-                continue
-            path = Path(item.local_path)
-            if not path.exists():
-                limitations.append(f"Вложение {path.name} не найдено на диске после загрузки.")
-                continue
-            suffix = path.suffix.lower()
-            if suffix in {".txt", ".md"}:
-                text = path.read_text(encoding="utf-8", errors="replace").strip()
-                if text:
-                    notes.append(f"{path.name}: {text[:400].replace(chr(10), ' ')}")
-                else:
-                    limitations.append(f"Вложение {path.name} пустое.")
-                continue
-            limitations.append(
-                f"Автоматическое извлечение содержимого из {path.name} ({item.kind}) пока не реализовано; файл сохранён для последующей обработки."
-            )
-        return notes, limitations
-
-    def _build_user_message(
-        self,
-        request: str,
-        *,
-        attachments: list[TelegramAttachment],
-        has_limitations: bool,
-        synthesis_message: str | None = None,
-    ) -> str:
-        normalized = " ".join((request or "").strip().split())
-        lowered = normalized.lower()
-        short = re.sub(r"\s+", " ", lowered).strip("!?., ")
-
-        if short in {"привет", "здравствуй", "здравствуйте", "добрый день", "добрый вечер"}:
-            return "Привет. Я на связи."
-        if short in {"ты здесь", "ты тут", "ответь", "ты работаешь"}:
-            return "Да, я на связи и готов работать."
-        if short in {"спасибо", "благодарю"}:
-            return "Пожалуйста. Если хочешь, можем сразу продолжить."
-        if attachments and has_limitations:
-            return (
-                "Материалы получил. Часть файлов сохранил, но не всё смог разобрать автоматически. "
-                "Если хочешь, следующим сообщением скажу, что лучше прислать или в каком виде."
-            )
-        if attachments:
-            return "Материалы получил и подготовил краткий результат. Если нужно, могу углубить разбор."
-        if synthesis_message and synthesis_message.strip():
-            return synthesis_message.strip()
-        if normalized.endswith("?"):
-            return "Готово. Короткий ответ подготовил. Если хочешь, могу раскрыть тему подробнее."
-        return "Готово. Запрос обработал. Если хочешь, следующим сообщением продолжу уже по сути задачи."
+    def run_wb_tnved_ui_catalog(self) -> dict[str, Any]:
+        result = self.marketplace.run_wb_tnved_ui_catalog()
+        return {
+            "output_dir": str(result.output_dir),
+            "markdown_path": str(result.markdown_path),
+            "xlsx_path": str(result.xlsx_path),
+            "errors_dir": str(result.errors_dir),
+            "category_count": result.category_count,
+            "unique_code_count": result.unique_code_count,
+            "row_count": result.row_count,
+            "error_count": result.error_count,
+        }

@@ -1,0 +1,473 @@
+<!DOCTYPE html><html lang="ru" dir="ltr"><head>
+    <meta charset="utf-8">
+    <meta name="google" value="notranslate">
+    <link rel="preconnect" href="https://static-basket-02.wbbasket.ru">
+    <link rel="icon" href="https://static-basket-02.wbbasket.ru/vol20/root-monorepo/latest/favicon.ico">
+    <meta property="og:image" content="https://static-basket-02.wbbasket.ru/vol20/root-monorepo/latest/favicon.ico">
+    <link rel="manifest" crossorigin="use-credentials" href="/manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#fff">
+    <meta name="yandex-verification" content="61b95d33285e2612">
+    <meta name="google-site-verification" content="guMau7oNvBifqUhZGuuGVtiGD0HkKe8v6uwYpvj2ZIg">
+    <title>Wildberries</title>
+    <script async="" src="https://a.wb.ru/sdk/sdk.js"></script><script>
+      window.ADDITIONAL_MENU_CONFIG = [
+  {'name':'menu.unreg-supplier-home-page-front','hidden':true,'defaultRoute':true},
+  {'name':'menu.main-page','hidden':true,'defaultRoute':true},
+  {'name':'menu.main-page-onboarding','hidden':true,'defaultRoute':true},
+  {'name':'menu.ban-page','hidden':true,'defaultRoute':true},
+  {'name':'menu.offerta-front'},
+  {'name':'menu.registration'},
+  {'name':'menu.pvz-ban-page-front','hidden':true}
+]
+;
+      window.__ENDPOINTS__ = {
+  VALIDATE_TOKEN: '/ns/passport-portal/suppliers-portal-ru/validate',
+  CDN_CONFIG_ENDPOINT: 'https://cdn.wbbasket.ru/api/v3/upstreams',
+  ROOT_ENDPOINT_SUPPLIER_AUTH: '/ns/suppliers-auth/suppliers-portal-core/auth/token',
+  CALLCENTER_BADGE_COUNT_V3: 'https://seller-callcenter.wildberries.ru/ns/suppliers-communication-api/callcenter/public/v3/badge/count',
+  ENDPOINT_NOTIFICATIONS: 'https://seller-communications.wildberries.ru/ns/notifications/suppliers-portal-eu/notifications',
+  MFA_GET_STATE_ENDPOINT: '/ns/mfa-action/portal-core',
+  PORTAL_SEARCH_ENDPOINT: '/ns/portal-search/portal-core',
+  PORTAL_LANDING: '/about-portal',
+  ENDPOINT_BANNERS_BASKET: 'https://static-basket-02.wbbasket.ru/vol20/banner-homepage/prd',
+  ENDPOINT_CHAT_SHARDS: 'https://static-basket-09.wbbasket.ru/vol174/chat/api/shards/shard-29808.json',
+  ENDPOINT_CHAT_SELLER: 'https://seller-chat.wildberries.ru',
+  ROOT_ENDPOINT_ABAC: '/ns/abac/suppliers-portal-core/',
+  ROOT_ENDPOINT_NG_ABAC: '/ns/ng-abac-access/suppliers-portal-core/',
+  LOAD_MENU_FILE_REQUEST_ENDPOINT: 'https://static-basket-02.wbbasket.ru/vol20/menu/v0.0.1/config.json',
+  LOGIN_PAGE_ENDPOINT: 'https://seller-auth.wildberries.ru',
+  LOGGER_ENDPOINT: '/ns/logs/suppliers-portal-eu/logs/createErrorLog',
+  LAYOUT_ENDPOINT_ABAC: '/ns/abac/suppliers-portal-core/abac/scope/attribute/get',
+  SUPPLIERS_ENDPOINT: '/ns/suppliers/suppliers-portal-core/suppliers',
+  LOAD_CONFIG_MENU_FILE_REQUEST_URL: '/datastorage/file',
+  LOAD_MENU_REQUEST_ENDPOINT: '/ns/menu/suppliers-portal-ru/v2/menu/getMainMenu',
+  LANGUAGES_ENDPOINT: 'https://mstatic.wbstatic.net/suppliers-portal-I18N/v0.0.2/languages.json',
+  AUTH_V3_BASE: 'https://seller-auth.wildberries.ru/auth',
+  QUIZ_STATIC_ENDPOINT: 'https://static-basket-02.wbbasket.ru/vol24/quiz/{quizId}',
+  AB_SPLITTER_ENDPOINT: 'https://splitter.wb.ru',
+}
+;
+      window.TRUSTED_ZONES = [
+  'discounts-prices.wildberries.ru',
+  'farvater.wildberries.ru',
+  'finance.wildberries.ru',
+  'marketplace.wildberries.ru',
+  'seller-antiplag.wildberries.ru',
+  'seller-auth.wildberries.ru',
+  'seller-brands.wildberries.ru',
+  'seller-callcenter.wildberries.ru',
+  'seller-chat.wildberries.ru',
+  'seller-communications.wildberries.ru',
+  'seller-content.wildberries.ru',
+  'seller-dp-cashback.wildberries.ru',
+  'seller-loans.wildberries.ru',
+  'seller-my-brands.wildberries.ru',
+  'seller-portal-blue.wildberries.ru',
+  'seller-portal-green.wildberries.ru',
+  'seller-price-index.wildberries.ru',
+  'seller-reviews.wildberries.ru',
+  'seller-services.wildberries.ru',
+  'seller-supply.wildberries.ru',
+  'seller-weekly-report.wildberries.ru',
+  'seller.wildberries.ru',
+]
+;
+      window.DYNAMIC_LOADER_MENU_FROM_STORE = true;
+      window.REPLACEMENT_BY_ZONE = {};
+      window.OWN_ZONES = [
+  'discounts-prices.wildberries.ru',
+  'farvater.wildberries.ru',
+  'marketplace.wildberries.ru',
+  'seller-antiplag.wildberries.ru',
+  'seller-auth.wildberries.ru',
+  'seller-brands.wildberries.ru',
+  'seller-callcenter.wildberries.ru',
+  'seller-chat.wildberries.ru',
+  'seller-communications.wildberries.ru',
+  'seller-content.wildberries.ru',
+  'seller-dp-cashback.wildberries.ru',
+  'seller-my-brands.wildberries.ru',
+  'seller-portal-blue.wildberries.ru',
+  'seller-portal-green.wildberries.ru',
+  'seller-price-index.wildberries.ru',
+  'seller-reviews.wildberries.ru',
+  'seller-services.wildberries.ru',
+  'seller-supply.wildberries.ru',
+  'seller-weekly-report.wildberries.ru',
+  'seller.wildberries.ru',
+]
+;
+      window.ENVS = {
+  DISABLE_PERSONAL_DATA_REQUEST: true,
+  ENABLE_SELLER_AUTH: true,
+  DISABLE_RUNTIME_CONFIG: true,
+  NOTIFICATION_QUIZ_ID: '83a983a9-01be-4f87-a975-756d0dfcd385',
+  AB_SPLITTER_KEY: 'fe1af366-1608-4e8b-a8c7-bc18ee5a426a',
+  ENABLE_NG_ABAC: false,
+  ENABLE_CDN_V3: true,
+  MFA_CHECK_ENABLE: true,
+  ENABLE_PORTAL_LANDING: true,
+  WB_ANALYTICS_COUNTER_ID: 7,
+  VERSION: 'v2.8.164',
+  REFRESH_WINDOW_TIMEOUT: '604800000',
+  SENTRY_DSN_CLIENT:
+    'https://094a48035148e4bd8ff0e4b6f4d27adb@marketplace-sentry.wb.ru/11',
+  SENTRY_ENVIRONMENT_NAME: 'production',
+  MAIN_ABAC_SCOPE: 'suppliers',
+  BACKGROUND_COLOR: '#e5e5e5',
+  REFRESH_NOTIFICATIONS_INTERVAL_MS: 100000,
+  NOT_FOUND_MENU_ITEMS: [
+    'menu.categories.promo-calendar-front-old',
+    'menu.categories.user-settings-profile',
+    'menu.main-page',
+    'menu.goods.product-card-supplier',
+  ],
+  LOGO_VARIANT_MAP: {},
+  NMID_DATA: [
+    { domain: 'basket-01.wbbasket.ru', minVol: 0, maxVol: 143 },
+    { domain: 'basket-02.wbbasket.ru', minVol: 144, maxVol: 287 },
+    { domain: 'basket-03.wbbasket.ru', minVol: 288, maxVol: 431 },
+    { domain: 'basket-04.wbbasket.ru', minVol: 432, maxVol: 719 },
+    { domain: 'basket-05.wbbasket.ru', minVol: 720, maxVol: 1007 },
+    { domain: 'basket-06.wbbasket.ru', minVol: 1008, maxVol: 1061 },
+    { domain: 'basket-07.wbbasket.ru', minVol: 1062, maxVol: 1115 },
+    { domain: 'basket-08.wbbasket.ru', minVol: 1116, maxVol: 1169 },
+    { domain: 'basket-09.wbbasket.ru', minVol: 1170, maxVol: 1313 },
+    { domain: 'basket-10.wbbasket.ru', minVol: 1314, maxVol: 1601 },
+    { domain: 'basket-11.wbbasket.ru', minVol: 1602, maxVol: 1655 },
+    { domain: 'basket-12.wbbasket.ru', minVol: 1656, maxVol: 1919 },
+    { domain: 'basket-13.wbbasket.ru', minVol: 1920, maxVol: 2045 },
+    { domain: 'basket-14.wbbasket.ru', minVol: 2046, maxVol: 2189 },
+    { domain: 'basket-15.wbbasket.ru', minVol: 2190, maxVol: 2405 },
+    { domain: 'basket-16.wbbasket.ru', minVol: 2406, maxVol: 2621 },
+    { domain: 'basket-17.wbbasket.ru', minVol: 2622, maxVol: 2837 },
+    { domain: 'basket-18.wbbasket.ru', minVol: 2838, maxVol: 3053 },
+    { domain: 'basket-19.wbbasket.ru', minVol: 3054, maxVol: 3269 },
+    { domain: 'basket-20.wbbasket.ru', minVol: 3270, maxVol: 3485 },
+    { domain: 'basket-21.wbbasket.ru', minVol: 3486, maxVol: 3701 },
+    { domain: 'basket-22.wbbasket.ru', minVol: 3702, maxVol: 3917 },
+    { domain: 'basket-23.wbbasket.ru', minVol: 3918, maxVol: 4133 },
+    { domain: 'basket-24.wbbasket.ru', minVol: 4134, maxVol: 4349 },
+    { domain: 'basket-25.wbbasket.ru', minVol: 4350, maxVol: 4565 },
+    { domain: 'basket-26.wbbasket.ru', minVol: 4566, maxVol: 4877 },
+    { domain: 'basket-27.wbbasket.ru', minVol: 4878, maxVol: 5189 },
+    { domain: 'basket-28.wbbasket.ru', minVol: 5190, maxVol: 5501 },
+    { domain: 'basket-29.wbbasket.ru', minVol: 5502, maxVol: 5813 },
+    { domain: 'basket-30.wbbasket.ru', minVol: 5814, maxVol: 6125 },
+    { domain: 'basket-31.wbbasket.ru', minVol: 6126, maxVol: 6437 },
+    { domain: 'basket-32.wbbasket.ru', minVol: 6438, maxVol: 6749 },
+    { domain: 'basket-33.wbbasket.ru', minVol: 6750, maxVol: 7061 },
+    { domain: 'basket-34.wbbasket.ru', minVol: 7062, maxVol: 7373 },
+    { domain: 'basket-35.wbbasket.ru', minVol: 7374, maxVol: 7685 },
+    { domain: 'basket-36.wbbasket.ru', minVol: 7686, maxVol: 7997 },
+    { domain: 'basket-37.wbbasket.ru', minVol: 7998, maxVol: 8309 },
+    { domain: 'basket-38.wbbasket.ru', minVol: 8310, maxVol: 8741 },
+    { domain: 'basket-39.wbbasket.ru', minVol: 8742, maxVol: 9173 },
+    { domain: 'basket-40.wbbasket.ru', minVol: 9174, maxVol: 9605 },
+    { domain: 'basket-41.wbbasket.ru', minVol: 9606, maxVol: 10373 },
+    { domain: 'basket-42.wbbasket.ru', minVol: 10374, maxVol: 11141 },
+    { domain: 'basket-43.wbbasket.ru', minVol: 11142, maxVol: 11909 },
+  ],
+  ROOT_ABAC_FEATURES: [
+    '[aA]dmin',
+    '[bB]anned',
+    '[mM]enu',
+    '[rR]oute',
+    'accessIsBanned',
+    'accessMSC',
+    'activeSupplier',
+    'balanceDashboard',
+    'balanceWidget',
+    'bonusPromoSupplier',
+    'disableBalanceACL',
+    'disabled',
+    'hasGlobalNewBalance',
+    'hasGlobalNewBalanceWithdraw',
+    'hasNewBalance',
+    'hasNewBalanceChart',
+    'isMarketplaceSaleDbs',
+    'isOwnerSupplier',
+    'isShowAppealsNotificationCounter',
+    'isWebVitalsEnabled',
+    'marketplaceSale',
+    'menuPointsForReviewsBanner',
+    'portal/marketplace',
+    'PWAIsShown',
+    'quizModalPersistent',
+    'quizNanoFront',
+    'reloadPageOnSupplierChange',
+    'removePhotoFrontend',
+    'root',
+    'showRegistrationMenu',
+    'useRefreshNotifications',
+    'withoutSupplier',
+    'shouldUseSupplierToken',
+  ],
+  RUNTIME_ENV: 'prod',
+  FINGERPRINT_FACCT_ENABLED: true,
+  FINGERPRINT_BIZONE_ENABLED: false,
+  FINGERPRINT_CYBERTRONICS_ENABLED: false,
+  WB_ANALYTICS_COOKIE_DOMAIN: '.wildberries.ru',
+}
+;
+      window.PUBLIC_STATIC_HOST = "https://static-basket-02.wbbasket.ru";
+
+      window.FETCH_MENU_CACHE_KEY_FUNCTION = ({ getCookie }) => { return { key: getCookie("x-supplier-id") || null };};
+      window.INIT_ABAC_PARAMS_FUNCTION = ({ getCookie }) => { return { key: getCookie("x-supplier-id") || null };};
+
+      window.LANGUAGES_FALLBACK = ["ru","en","zh","ka","uz","hy","kk"];
+
+      window.LOGOUT_REQUIRED_EXTERNAL_ORIGINS = [];
+      window.__ROOT_URLS__ = ["/not-found"];
+      /* v1.87.2 */
+    </script>
+    <!-- PWA ios icons -->
+    <!-- <link rel="apple-touch-icon" sizes="16x16" href="%PUBLIC_URL%/icons/ios/16.png" />
+  <link rel="apple-touch-icon" sizes="20x20" href="%PUBLIC_URL%/icons/ios/20.png" />
+  <link rel="apple-touch-icon" sizes="29x29" href="%PUBLIC_URL%/icons/ios/29.png" />
+  <link rel="apple-touch-icon" sizes="32x32" href="%PUBLIC_URL%/icons/ios/32.png" />
+  <link rel="apple-touch-icon" sizes="40x40" href="%PUBLIC_URL%/icons/ios/40.png" />
+  <link rel="apple-touch-icon" sizes="50x50" href="%PUBLIC_URL%/icons/ios/50.png" />
+  <link rel="apple-touch-icon" sizes="57x57" href="%PUBLIC_URL%/icons/ios/57.png" />
+  <link rel="apple-touch-icon" sizes="58x58" href="%PUBLIC_URL%/icons/ios/58.png" />
+  <link rel="apple-touch-icon" sizes="60x60" href="%PUBLIC_URL%/icons/ios/60.png" />
+  <link rel="apple-touch-icon" sizes="64x64" href="%PUBLIC_URL%/icons/ios/64.png" />
+  <link rel="apple-touch-icon" sizes="72x72" href="%PUBLIC_URL%/icons/ios/72.png" />
+  <link rel="apple-touch-icon" sizes="76x76" href="%PUBLIC_URL%/icons/ios/76.png" />
+  <link rel="apple-touch-icon" sizes="80x80" href="%PUBLIC_URL%/icons/ios/80.png" />
+  <link rel="apple-touch-icon" sizes="87x87" href="%PUBLIC_URL%/icons/ios/87.png" />
+  <link rel="apple-touch-icon" sizes="100x100" href="%PUBLIC_URL%/icons/ios/100.png" />
+  <link rel="apple-touch-icon" sizes="114x114" href="%PUBLIC_URL%/icons/ios/114.png" />
+  <link rel="apple-touch-icon" sizes="120x120" href="%PUBLIC_URL%/icons/ios/120.png" />
+  <link rel="apple-touch-icon" sizes="128x128" href="%PUBLIC_URL%/icons/ios/128.png" />
+  <link rel="apple-touch-icon" sizes="144x144" href="%PUBLIC_URL%/icons/ios/144.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="%PUBLIC_URL%/icons/ios/152.png" />
+  <link rel="apple-touch-icon" sizes="167x167" href="%PUBLIC_URL%/icons/ios/167.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/icons/ios/180.png" />
+  <link rel="apple-touch-icon" sizes="192x192" href="%PUBLIC_URL%/icons/ios/192.png" />
+  <link rel="apple-touch-icon" sizes="256x256" href="%PUBLIC_URL%/icons/ios/256.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="%PUBLIC_URL%/icons/ios/512.png" />
+  <link rel="apple-touch-icon" sizes="1024x1024" href="%PUBLIC_URL%/icons/ios/1024.png" /> -->
+
+    <!-- PWA ios splash-screens -->
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-2048-2732.jpg"
+    media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-2732-2048.jpg"
+    media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1668-2388.jpg"
+    media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-2388-1668.jpg"
+    media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1536-2048.jpg"
+    media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-2048-1536.jpg"
+    media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1668-2224.jpg"
+    media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-2224-1668.jpg"
+    media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1620-2160.jpg"
+    media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-2160-1620.jpg"
+    media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1284-2778.jpg"
+    media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-2778-1284.jpg"
+    media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1170-2532.jpg"
+    media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-2532-1170.jpg"
+    media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1125-2436.jpg"
+    media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-2436-1125.jpg"
+    media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1242-2688.jpg"
+    media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-2688-1242.jpg"
+    media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-828-1792.jpg"
+    media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1792-828.jpg"
+    media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1242-2208.jpg"
+    media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-2208-1242.jpg"
+    media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-750-1334.jpg"
+    media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1334-750.jpg"
+    media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-640-1136.jpg"
+    media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/icons/ios/splash-screens/apple-splash-1136-640.jpg"
+    media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" /> -->
+
+    <!-- https://github.com/GoogleChromeLabs/tti-polyfill -->
+    <script>
+      !(function () {
+        if ('PerformanceLongTaskTiming' in window) {
+          var g = (window.__tti = { e: [] });
+          g.o = new PerformanceObserver(function (l) {
+            g.e = g.e.concat(l.getEntries());
+          });
+          g.o.observe({ entryTypes: ['longtask'] });
+        }
+      })();
+    </script>
+
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        height: 100%;
+        width: 100%;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      .circular--modern {
+        animation: rotate 2s linear infinite;
+        bottom: 0;
+        height: 100%;
+        left: 0;
+        margin: auto;
+        position: absolute;
+        right: 0;
+        top: 0;
+        transform-origin: center center;
+        width: 100%;
+      }
+
+      .path--modern {
+        animation: dash 1.5s ease-in-out infinite, color 6s ease-in-out infinite;
+        stroke: #3a0078;
+        stroke-dasharray: 1, 200;
+        stroke-dashoffset: 0;
+        stroke-linecap: round;
+      }
+
+      @keyframes rotate {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes dash {
+        0% {
+          stroke-dasharray: 1, 200;
+          stroke-dashoffset: 0;
+        }
+
+        50% {
+          stroke-dasharray: 89, 200;
+          stroke-dashoffset: -35px;
+        }
+
+        100% {
+          stroke-dasharray: 89, 200;
+          stroke-dashoffset: -124px;
+        }
+      }
+
+      .icon-layout {
+        display: none;
+
+        flex-direction: column;
+        height: 100vh;
+        justify-content: center;
+        width: 100%;
+      }
+
+      .icon-layout--shown {
+        display: flex;
+      }
+
+      .loading-icon {
+        margin: 0 auto;
+        position: relative;
+        width: 100px;
+      }
+
+      .loading-icon::before {
+        content: '';
+        display: block;
+        padding-top: 100%;
+      }
+
+      .circular {
+        animation: rotate 2s linear infinite;
+        bottom: 0;
+        height: 100%;
+        left: 0;
+        margin: auto;
+        position: absolute;
+        right: 0;
+        top: 0;
+        transform-origin: center center;
+        width: 100%;
+      }
+
+      .path {
+        stroke: #6c11c9;
+        stroke-dasharray: 90, 200;
+        stroke-dashoffset: 0;
+        stroke-linecap: round;
+      }
+
+      @keyframes rotate {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  <link rel="stylesheet" href="https://static-basket-02.wbbasket.ru/vol20/root-monorepo/latest/vendor.4f0948f24a1243f8.css"><link rel="stylesheet" href="https://static-basket-02.wbbasket.ru/vol20/root-monorepo/latest/main.8bf5e3bf2d7742d6.css"><style id="_s410762777802101">.UwsrJONbXLrV{display:none;position:absolute;left:-9999px;}.QrGULmLcTEJr{display:inline;}.sTLkJrkbOTsp{display:none;}</style></head>
+
+  <body style="background: rgb(247, 247, 250);">
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root">
+      <div class="icon-layout" id="icon-layout">
+        <div class="loading-icon" id="loading-icon">
+          <svg class="circular--modern" id="circular" viewBox="25 25 50 50">
+            <circle id="path" class="path--modern" cx="50" cy="50" r="20" fill="none" stroke-width="2" stroke-miterlimit="10"></circle>
+          </svg>
+        </div>
+      </div>
+      <script>
+        var isNotIE11 =
+          !Boolean(window.MSInputMethodContext) ||
+          !Boolean(document.documentMode);
+        if (isNotIE11) {
+          document.getElementById('circular').className.baseVal =
+            'circular--modern';
+          document.getElementById('path').className.baseVal = 'path--modern';
+        }
+
+        setTimeout(() => {
+          const iconContainer =
+            document.getElementsByClassName('icon-layout')[0];
+
+          if (iconContainer) {
+            console.log(iconContainer);
+            iconContainer.classList.add('icon-layout--shown');
+          }
+        }, 10000);
+      </script>
+      <script>
+        document.body.style.background = window.BACKGROUND_COLOR || '#f7f7fa';
+      </script>
+    </div>
+    <div id="portal"></div>
+  <script src="https://static-basket-02.wbbasket.ru/vol20/root-monorepo/latest/runtime.6f80450771c0ad7d.js" type="module"></script><script src="https://static-basket-02.wbbasket.ru/vol20/root-monorepo/latest/vendor.69be85166d7a453e.js" type="module"></script><script src="https://static-basket-02.wbbasket.ru/vol20/root-monorepo/latest/main.a063790fd304996c.js" type="module"></script>
+
+<script src="https://static-basket-02.wbbasket.ru/vol20/sec/facct/622dcf80-a907-11f0-be8c-b3c1580000001.js" async=""></script></body></html>

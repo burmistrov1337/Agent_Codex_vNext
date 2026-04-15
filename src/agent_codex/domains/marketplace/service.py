@@ -10,6 +10,7 @@ from .cabinet_monitor import CabinetMonitorConfig, CabinetMonitorResult, build_c
 from .sample_data import SampleWildberriesClient
 from .sku_diagnostic import SkuDiagnosticConfig, build_sku_diagnostic
 from .supply_planner import SupplyPlanConfig, build_supply_plan
+from .tnved_ui_catalog import TnvedUiCatalogConfig, build_tnved_ui_catalog
 
 
 @dataclass(slots=True)
@@ -60,3 +61,21 @@ class MarketplaceService:
             today=today,
         )
 
+    def run_wb_tnved_ui_catalog(self, *, today: date | None = None):
+        output_root = (self.settings.project_root / "generated" / "marketplace").resolve()
+        output_root.mkdir(parents=True, exist_ok=True)
+        client = build_wildberries_client(self.settings)
+        return build_tnved_ui_catalog(
+            client,
+            TnvedUiCatalogConfig(
+                output_root=output_root,
+                browser_user_data_dir=self.settings.wb_ui_browser_user_data_dir,
+                browser_profile_directory=self.settings.wb_ui_browser_profile_directory,
+                browser_channel=self.settings.wb_ui_browser_channel,
+                browser_executable_path=self.settings.wb_ui_browser_executable_path,
+                browser_cdp_url=self.settings.wb_ui_browser_cdp_url,
+                seller_url=self.settings.wb_ui_seller_url,
+                card_url_template=self.settings.wb_ui_card_url_template,
+            ),
+            today=today,
+        )
