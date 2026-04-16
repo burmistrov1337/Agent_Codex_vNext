@@ -4,6 +4,7 @@ import importlib
 import json
 import re
 from dataclasses import asdict
+from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
@@ -394,3 +395,86 @@ class AgentExecutor:
             "row_count": result.row_count,
             "error_count": result.error_count,
         }
+
+    def _execute_workers(
+        self,
+        *,
+        task_graph,
+        context: WorkerContext,
+        headless: bool,
+        attachments: list[TelegramAttachment] | None = None,
+        attachment_notes: list[str] | None = None,
+        attachment_limitations: list[str] | None = None,
+    ) -> list[WorkerResult]:
+        backend_name = self.settings.cheap_backend if headless else self.settings.primary_reasoning_backend
+        backend = select_backend(
+            backend_name,
+            groq_api_key=self.settings.groq_api_key,
+            groq_model=self.settings.groq_model,
+            openai_api_key=self.settings.openai_api_key,
+            openai_model=self.settings.openai_model,
+            anthropic_api_key=self.settings.anthropic_api_key,
+            anthropic_model=self.settings.anthropic_model,
+            ollama_base_url=self.settings.ollama_base_url,
+            ollama_model=self.settings.ollama_model,
+        )
+
+        notes = attachment_notes or []
+        limitations = attachment_limitations or []
+        results: list[WorkerResult] = []
+        for index, task in enumerate(task_graph.tasks):
+            response = backend.run(task, context)
+            evidence = []
+            if index == 0 and notes:
+                evidence.extend(notes[:5])
+            results.append(
+                WorkerResult(
+                    task_id=task.id,
+                    role=task.role,
+                    status="completed",
+                    summary=(response.summary or f"{task.role}: completed")[:300],
+                    output=response.output or response.summary or "",
+                    evidence=evidence,
+                    alerts=limitations[:],
+                    gaps=list(response.gaps or []),
+                    follow_up_actions=list(response.follow_up_actions or []),
+                )
+            )
+        return results
+
+    def _collect_attachment_notes(self, attachments: list[TelegramAttachment]) -> tuple[list[str], list[str]]:
+        notes: list[str] = []
+        limitations: list[str] = []
+        for item in attachments:
+            label = item.file_name or item.file_id
+            if item.local_path:
+                notes.append(f"{item.kind}: {label}")
+                continue
+            limitations.append(f"Вложение не удалось скачать: {label}")
+        return notes, limitations
+
+    def _build_user_message(
+        self,
+        request: str,
+        *,
+        attachments: list[TelegramAttachment],
+        has_limitations: bool,
+        synthesis_message: str | None,
+    ) -> str:
+        cleaned = (request or "").strip().lower()
+        if re.fullmatch(r"(привет|здравствуй|здравствуйте|hello|hi)[!,. ]*", cleaned):
+            return "Привет. Я на связи."
+        if synthesis_message and synthesis_message.strip():
+            base = synthesis_message.strip()
+        elif attachments:
+            base = "Готово. Разобрал запрос и вложения."
+        else:
+            base = "Готово. Подготовил ответ по задаче."
+        if has_limitations:
+            return f"{base}\n\nЕсть ограничения по части вложений."
+        return base
+
+    def _persist_run_envelope(self, envelope: RunEnvelope, artifact_dir: Path) -> str:
+        path = artifact_dir / "run_envelope.json"
+        path.write_text(json.dumps(envelope.to_dict(), ensure_ascii=False, indent=2), encoding="utf-8")
+        return str(path)
