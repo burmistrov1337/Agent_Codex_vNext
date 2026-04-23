@@ -1,0 +1,5 @@
+aiohttp>=3.10.0
+aiosqlite>=0.20.0
+google-auth>=2.35.0
+requests>=2.32.0
+beautifulsoup4>=4.12.0

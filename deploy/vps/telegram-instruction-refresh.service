@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh Telegram instruction search index
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/opt/telegram_adk_bot/app
+ExecStart=/bin/bash /opt/telegram_adk_bot/app/scripts/refresh_telegram_instruction_index.sh
+

@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh MAX instruction search index
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/opt/max_bot/app
+ExecStart=/bin/bash /opt/max_bot/app/scripts/refresh_max_instruction_index.sh
+
