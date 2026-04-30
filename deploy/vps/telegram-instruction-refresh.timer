@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily Telegram instruction search refresh
+
+[Timer]
+OnCalendar=*-*-* 01:00:00 UTC
+Persistent=true
+RandomizedDelaySec=0
+Unit=telegram-instruction-refresh.service
+
+[Install]
+WantedBy=timers.target
