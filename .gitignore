@@ -8,6 +8,10 @@ venv/
 env/
 .env
 server.env
+tmp_*
+*.lock
+*.db
+*/runtime/heartbeat.json
 
 .agent_codex/sessions/*
 !.agent_codex/sessions/.gitkeep
@@ -29,3 +33,8 @@ server.env
 
 Thumbs.db
 .DS_Store
+generated/max_browser_profile/
+generated/max_pw_profile/
+generated/max_yandex_profile/
+generated/**/BrowserMetrics*
+generated/**/Crashpad*
