@@ -237,6 +237,7 @@ def _render_dashboard(rows: list[SupplyRow]) -> str:
             <th>Артикул продавца</th>
             <th>Баркод</th>
             <th class="print-hide">Остаток</th>
+            <th class="print-hide">Остаток WB</th>
             <th class="print-hide">Цена со скидкой</th>
             <th class="print-hide">К отгрузке</th>
             <th>Количество</th>
@@ -280,6 +281,7 @@ def _render_dashboard(rows: list[SupplyRow]) -> str:
         <td>${{item.vendorCode}}</td>
         <td>${{item.barcode}}</td>
         <td class="print-hide">${{item.stock}}</td>
+        <td class="print-hide">${{item.wbStock}}</td>
         <td class="print-hide">${{item.price}}</td>
         <td class="print-hide">${{item.shipQty}}</td>
         <td class="editable" contenteditable="true">${{item.shipQty}}</td>
@@ -308,7 +310,7 @@ def _render_dashboard(rows: list[SupplyRow]) -> str:
         return {{
           title: (cells[0]?.innerText || '').trim(),
           barcode: (cells[3]?.innerText || '').trim(),
-          quantity: (cells[7]?.innerText || '').trim(),
+          quantity: (cells[8]?.innerText || '').trim(),
         }};
       }}).filter((item) => item.title || item.barcode || item.quantity);
       const missing = rows.filter((item) => !item.quantity);
@@ -431,6 +433,7 @@ def _render_warehouse_row(row: SupplyRow) -> str:
         f"<td>{html.escape(row.vendor_code)}</td>"
         f"<td>{html.escape(row.barcode)}</td>"
         f"<td class='print-hide'>{row.seller_stock}</td>"
+        f"<td class='print-hide'>{row.wb_stock}</td>"
         f"<td class='print-hide'>{_money(row.price)}</td>"
         f"<td class='print-hide'>{row.ship_qty}</td>"
         f"<td class='editable' contenteditable='true'>{row.ship_qty}</td>"
@@ -448,6 +451,7 @@ def _render_catalog_item(row: SupplyRow) -> str:
         f"vendorCode:'{_js(row.vendor_code)}',"
         f"barcode:'{_js(row.barcode)}',"
         f"stock:'{row.seller_stock}',"
+        f"wbStock:'{row.wb_stock}',"
         f"price:'{_money(row.price)}',"
         f"shipQty:'{row.ship_qty}'"
         "}"
